@@ -1,0 +1,21 @@
+--- a/data/start-cosmic
++++ b/data/start-cosmic
+@@ -42,17 +42,7 @@
+ # Set the QT platform theme to CuteCosmic. Fallback to qt6ct if CuteCosmic is not installed.
+ if [ -z "$QT_QPA_PLATFORMTHEME" ]; then
+     export QT_QPA_PLATFORMTHEME=cosmic
+-    for QT_PLUGIN_PATH in /usr/lib*/qt6/plugins /usr/lib/*/qt6/plugins; do
+-        if [ -f "${QT_PLUGIN_PATH}/platformthemes/libcutecosmictheme.so" ]; then
+-            # CuteCosmic found, no need for a fallback.
+-            export QT_QPA_PLATFORMTHEME=cosmic
+-            break
+-        elif [ -f "${QT_PLUGIN_PATH}/platformthemes/libqt6ct.so" ] || [ -f "${QT_PLUGIN_PATH}/platformthemes/libqt5ct.so" ]; then
+-            # Fallback to qt6ct, but keep looking for CuteCosmic.
+-            # Note that "qt5ct" is compatible with both qt5ct and qt6ct.
+-            export QT_QPA_PLATFORMTHEME=qt5ct
+-        fi
+-    done
++    export QT_PLUGIN_PATH=@cutecosmic@"${QT_PLUGIN_PATH:+:$QT_PLUGIN_PATH}"
+ fi
+ 
+ # Start gnome keyring components if the daemon is active
