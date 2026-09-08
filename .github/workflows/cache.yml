@@ -8,8 +8,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: cosmic-cache-v2
-  cancel-in-progress: false
+  group: cosmic-cache
+  cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
   prepare:
     if: github.event.repository.visibility == 'public'
