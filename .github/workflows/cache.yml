@@ -1,0 +1,80 @@
+name: Build and verify COSMIC cache
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: cosmic-cache
+  cancel-in-progress: false
+jobs:
+  prepare:
+    if: github.event.repository.visibility == 'public'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      revision: ${{ steps.resolve.outputs.revision }}
+      matrix: ${{ steps.resolve.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - id: resolve
+        run: python3 scripts/ci.py resolve
+  build:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        package: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    env:
+      SOURCE_REV: ${{ needs.prepare.outputs.revision }}
+      PACKAGE: ${{ matrix.package }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            max-jobs = 1
+            cores = 2
+      - name: Build one COSMIC output
+        run: python3 scripts/ci.py build
+      - name: Upload runtime closure only
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 scripts/ci.py push
+  publish:
+    needs: [prepare, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    env:
+      SOURCE_REV: ${{ needs.prepare.outputs.revision }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Verify downloads in a fresh runner and matching NixOS outputs
+        run: python3 scripts/ci.py verify
+      - name: Protect completed snapshots in Cachix
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 scripts/ci.py retain
+      - name: Advance cached branch without force-pushing
+        run: python3 scripts/ci.py publish
