@@ -17,7 +17,7 @@
       "version": "1.7.0-unstable-2026-07-29"
     },
     "cosmic-comp": {
-      "path": "/nix/store/kc0mij0ryrfaw0acs5yhlmbpnfrzm7c7-cosmic-comp-1.7.0-unstable-2026-09-08",
+      "path": "/nix/store/q89mb20mclg4yyai2pa8qma0iwjiwp4r-cosmic-comp-1.7.0-unstable-2026-09-08",
       "preferLocalBuild": false,
       "version": "1.7.0-unstable-2026-09-08"
     },
@@ -157,7 +157,7 @@
       "version": "1.7.0-unstable-2026-09-01"
     }
   },
-  "revision": "b502656fbebfb5b6e930cb7a9e0c06a1003e6846",
+  "revision": "cf1933134cfca1c0f0862f30921f47eb87818ec7",
   "schema": 2,
-  "verifiedAt": "2026-09-08T21:21:30.352923+00:00"
+  "verifiedAt": "2026-09-08T22:40:00.707895+00:00"
 }
