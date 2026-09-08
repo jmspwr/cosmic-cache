@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 from concurrent.futures import ThreadPoolExecutor
 import datetime
 import json
@@ -19,7 +20,8 @@ SOURCE_BRANCH = "source"
 SOURCE_REPO = os.environ.get("GITHUB_REPOSITORY", "jmspwr/cosmic-cache")
 
 
-def run(*args: str, capture: bool = True, cwd: str | Path | None = None, env: dict | None = None) -> str:
+def run(*args: str, capture: bool = True, cwd: str | Path | None = None,
+        env: dict[str, str] | None = None) -> str:
     result = subprocess.run(
         args,
         check=True,
@@ -39,12 +41,12 @@ def cache() -> dict:
     value = json.loads(Path("cache.json").read_text())
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,49}", value["name"]):
         raise ValueError("Invalid cache name")
-    expected = f'https://{value["name"]}.cachix.org'
-    if value["uri"].rstrip("/") != expected:
+    if value["uri"].rstrip("/") != f'https://{value["name"]}.cachix.org':
         raise ValueError("Unexpected Cachix URL")
     keys = value.get("publicSigningKeys", [])
     if not keys or not all(
-        isinstance(k, str) and k.startswith(value["name"] + ".cachix.org-") for k in keys
+        isinstance(k, str) and k.startswith(value["name"] + ".cachix.org-")
+        for k in keys
     ):
         raise ValueError("Missing/invalid cache public signing keys")
     return value
@@ -68,8 +70,11 @@ def snapshot(revision: str) -> None:
 
 def selected_package(name: str) -> bool:
     return (
-        ((name.startswith("cosmic-") and not name.startswith("cosmic-ext-"))
-         or name in {"pop-launcher", "xdg-desktop-portal-cosmic", "cutecosmic"})
+        (
+            name.startswith("cosmic-")
+            and not name.startswith("cosmic-ext-")
+            or name in {"pop-launcher", "xdg-desktop-portal-cosmic", "cutecosmic"}
+        )
         and name != "cosmic-applibrary"
     )
 
@@ -99,12 +104,12 @@ def component_sources(root: str | Path) -> dict[str, dict[str, str]]:
         rev = re.search(r'\brev\s*=\s*"([0-9a-f]{40})"\s*;', body)
         if not (owner and repo and rev):
             raise RuntimeError(f"Cannot track primary GitHub source for {package_dir.name}")
-        name = f"{owner.group(1)}/{repo.group(1)}"
-        existing = sources.get(name)
+        upstream = f"{owner.group(1)}/{repo.group(1)}"
         value = {"package": package_dir.name, "rev": rev.group(1)}
+        existing = sources.get(upstream)
         if existing and existing["rev"] != value["rev"]:
-            raise RuntimeError(f"Conflicting pinned revisions for {name}")
-        sources[name] = value
+            raise RuntimeError(f"Conflicting pinned revisions for {upstream}")
+        sources[upstream] = value
         if package_dir.name in required:
             seen_required.add(package_dir.name)
 
@@ -162,10 +167,19 @@ def published_revision() -> str:
         if exc.code == 404:
             return ""
         raise
-    expected = f"github:{SOURCE_REPO}/"
+    prefix = f"github:{SOURCE_REPO}/"
     source = value.get("url", "")
-    revision = source[len(expected):] if source.startswith(expected) else ""
+    revision = source[len(prefix):] if source.startswith(prefix) else ""
     return revision if re.fullmatch(r"[0-9a-f]{40}", revision) else ""
+
+
+def github_push_env(token: str) -> dict[str, str]:
+    env = os.environ.copy()
+    auth = base64.b64encode(f"x-access-token:{token}".encode()).decode()
+    env["GIT_CONFIG_COUNT"] = "1"
+    env["GIT_CONFIG_KEY_0"] = "http.https://github.com/.extraheader"
+    env["GIT_CONFIG_VALUE_0"] = f"AUTHORIZATION: basic {auth}"
+    return env
 
 
 def refresh_source() -> tuple[str, bool]:
@@ -184,13 +198,12 @@ def refresh_source() -> tuple[str, bool]:
         pinned = component_sources(tmp)
         heads = remote_heads(sorted(pinned))
 
-        current = (
+        if (
             previous_meta is not None
             and previous_meta.get("schema") == 1
             and previous_meta.get("packagingBase") == base
             and previous_meta.get("components") == heads
-        )
-        if current:
+        ):
             print(f"COSMIC source snapshot already current at {previous}")
             return previous, False
 
@@ -211,7 +224,11 @@ def refresh_source() -> tuple[str, bool]:
         pinned_after = component_sources(tmp)
         heads_after = remote_heads(sorted(pinned_after))
         stale = {
-            repo: {"package": data["package"], "pinned": data["rev"], "head": heads_after[repo]}
+            repo: {
+                "package": data["package"],
+                "pinned": data["rev"],
+                "head": heads_after[repo],
+            }
             for repo, data in pinned_after.items()
             if data["rev"] != heads_after[repo]
         }
@@ -231,6 +248,13 @@ def refresh_source() -> tuple[str, bool]:
             },
         )
         run("git", "add", "-A", cwd=tmp)
+        # Source snapshots carry packaging data, never upstream CI workflow files.
+        run(
+            "git", "rm", "-r", "--cached", "--ignore-unmatch", ".github",
+            cwd=tmp, capture=False,
+        )
+        if run("git", "ls-files", ".github", cwd=tmp):
+            raise RuntimeError("Source snapshot unexpectedly contains .github files")
         tree = run("git", "write-tree", cwd=tmp)
 
         parent_args: list[str] = []
@@ -248,10 +272,10 @@ def refresh_source() -> tuple[str, bool]:
             "git", "commit-tree", tree, *parent_args,
             "-m", "Refresh COSMIC component HEADs", cwd=tmp,
         )
-        push_url = f"https://x-access-token:{token}@github.com/{SOURCE_REPO}.git"
         run(
-            "git", "push", push_url,
-            f"{revision}:refs/heads/{SOURCE_BRANCH}", cwd=tmp, capture=False,
+            "git", "push", f"https://github.com/{SOURCE_REPO}.git",
+            f"{revision}:refs/heads/{SOURCE_BRANCH}", cwd=tmp,
+            env=github_push_env(token), capture=False,
         )
         print(f"Published source snapshot {revision} from packaging base {base}")
         return revision, True
@@ -287,7 +311,8 @@ def resolve() -> None:
         out.write("build=" + ("true" if build_needed else "false") + "\n")
     print(
         f"Resolved {len(names)} package outputs at {revision}; "
-        f"source_changed={str(source_changed).lower()} build={str(build_needed).lower()}"
+        f"source_changed={str(source_changed).lower()} "
+        f"build={str(build_needed).lower()}"
     )
 
 
@@ -318,7 +343,10 @@ def push() -> None:
 def verify(revision: str) -> None:
     snapshot(revision)
     info = package_info()
-    if any(p["preferLocalBuild"] not in (False, "", "0", None) for p in info.values()):
+    if any(
+        p["preferLocalBuild"] not in (False, "", "0", None)
+        for p in info.values()
+    ):
         raise RuntimeError("A source package forces local builds; refuse publication")
 
     expression = "builtins.map (p: p.out) (builtins.attrValues (import ./packages.nix))"
@@ -353,7 +381,10 @@ def verify(revision: str) -> None:
             "schema": 2,
             "verifiedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "revision": revision,
-            "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
+            "method": (
+                "fresh-job nix-build: max-jobs=0, no remote builders; "
+                "exact module-output equality"
+            ),
             "packages": info,
         },
     )
@@ -397,7 +428,8 @@ def publish() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "command", choices=["resolve", "build", "push", "verify", "retain", "publish"]
+        "command",
+        choices=["resolve", "build", "push", "verify", "retain", "publish"],
     )
     parser.add_argument("--revision", default=os.environ.get("SOURCE_REV", ""))
     parser.add_argument("--package", default=os.environ.get("PACKAGE", ""))
