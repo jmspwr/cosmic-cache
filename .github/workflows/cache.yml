@@ -33,6 +33,68 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/ci.py resolve
+  compat-probe:
+    if: needs.prepare.outputs.build == 'true'
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    outputs:
+      retired: ${{ steps.probe.outputs.retired }}
+    env:
+      SOURCE_REV: ${{ needs.prepare.outputs.revision }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            max-jobs = 1
+            cores = 2
+      - id: probe
+        name: Probe normal cosmic-comp and retire fallback when possible
+        run: |
+          if ! python3 - <<'PY'
+          import json, sys
+          value = json.load(open('compat.json'))
+          sys.exit(0 if value.get('cosmicCompLibdisplayInfo03', False) else 1)
+          PY
+          then
+            echo "cosmic-comp compatibility fallback is already retired"
+            echo "retired=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          python3 - <<'PY'
+          import json
+          path = 'compat.json'
+          value = json.load(open(path))
+          value['cosmicCompLibdisplayInfo03'] = False
+          with open(path, 'w') as out:
+              json.dump(value, out, indent=2, sort_keys=True)
+              out.write('\n')
+          PY
+
+          if python3 scripts/ci.py build --package cosmic-comp --revision "$SOURCE_REV"; then
+            git fetch origin main
+            if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
+              echo "main changed during compatibility probe; a newer run will decide"
+              echo "retired=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add compat.json
+            git commit -m "Retire cosmic-comp libdisplay-info compatibility fallback"
+            git push origin HEAD:main
+            echo "normal cosmic-comp build succeeded; compatibility fallback retired"
+            echo "retired=true" >> "$GITHUB_OUTPUT"
+          else
+            git checkout -- compat.json
+            echo "normal cosmic-comp still fails; keeping libdisplay-info 0.3 compatibility fallback"
+            echo "retired=false" >> "$GITHUB_OUTPUT"
+          fi
   build:
     if: needs.prepare.outputs.build == 'true'
     needs: prepare
@@ -62,8 +124,8 @@ jobs:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: python3 scripts/ci.py push
   publish:
-    if: needs.prepare.outputs.build == 'true'
-    needs: [prepare, build]
+    if: needs.prepare.outputs.build == 'true' && needs.compat-probe.outputs.retired != 'true'
+    needs: [prepare, build, compat-probe]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
