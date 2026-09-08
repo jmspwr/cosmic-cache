@@ -9,7 +9,7 @@ permissions:
   contents: read
 concurrency:
   group: cosmic-cache
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   prepare:
     if: github.event.repository.visibility == 'public'
@@ -34,7 +34,6 @@ jobs:
     timeout-minutes: 350
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         package: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     env:
