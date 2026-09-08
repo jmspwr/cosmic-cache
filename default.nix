@@ -17,7 +17,7 @@ in
     message = "This COSMIC cache publishes x86_64-linux packages only.";
   }];
   nix.settings = {
-    substituters = [ cache.uri ];
-    trusted-public-keys = cache.publicSigningKeys;
+    extra-substituters = [ cache.uri ];
+    extra-trusted-public-keys = cache.publicSigningKeys;
   };
 }
