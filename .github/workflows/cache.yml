@@ -20,6 +20,7 @@ jobs:
     outputs:
       revision: ${{ steps.resolve.outputs.revision }}
       matrix: ${{ steps.resolve.outputs.matrix }}
+      source_build: ${{ steps.resolve.outputs.build }}
       build: ${{ steps.decision.outputs.build }}
       client_digest: ${{ steps.decision.outputs.client_digest }}
     steps:
@@ -90,6 +91,7 @@ jobs:
       retired: ${{ steps.probe.outputs.retired }}
     env:
       SOURCE_REV: ${{ needs.prepare.outputs.revision }}
+      SOURCE_BUILD: ${{ needs.prepare.outputs.source_build }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
@@ -101,6 +103,12 @@ jobs:
       - id: probe
         name: Probe normal cosmic-comp and retire fallback when possible
         run: |
+          if [ "$SOURCE_BUILD" != "true" ]; then
+            echo "COSMIC source is unchanged; compatibility state cannot have changed"
+            echo "retired=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           if ! python3 - <<'PY'
           import json, sys
           value = json.load(open('compat.json'))
