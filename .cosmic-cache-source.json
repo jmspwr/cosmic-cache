@@ -4,10 +4,10 @@
     "pop-os/cosmic-applets": "b933e538c043fbece3f6ecc432538608b3382819",
     "pop-os/cosmic-applibrary": "5b7638f116360c1139efe795c8739cc89c87dca1",
     "pop-os/cosmic-bg": "1685f7fc99cbb9cbe981ac672d6451ba6faff7db",
-    "pop-os/cosmic-comp": "7d1daab7bc5db7ef0c4be64af1e35c8a24acfa9b",
+    "pop-os/cosmic-comp": "a55785993e8ef6aad38862cb1a9e1ccaad3c340d",
     "pop-os/cosmic-edit": "26f6ffd3e6ae2250363ab550e20601c065a565cb",
     "pop-os/cosmic-files": "089ad2b417edded26385029166e5b49c13432bf8",
-    "pop-os/cosmic-greeter": "0a16d339a4b611e92a139c3422dbef76c5f3418e",
+    "pop-os/cosmic-greeter": "ff31b59b7d0b3f2e219c4bc3598a5bac02ac4e6e",
     "pop-os/cosmic-icons": "343c007f37cd71716e68f01c43ecf2764b7f7c47",
     "pop-os/cosmic-idle": "c95d066b5b640509a6369634b669ca60dc50e168",
     "pop-os/cosmic-initial-setup": "852a4b35fa7d5b5968e33da5cc41d7d7da235fec",
@@ -21,7 +21,7 @@
     "pop-os/cosmic-randr": "6e8e795970fa06d434af22775e415b517f7552d3",
     "pop-os/cosmic-reader": "42ea9431705e665b9daf7681ded5f726e1b0389e",
     "pop-os/cosmic-screenshot": "5ddcf1804192ff98823bd37a778286db5a00f3dd",
-    "pop-os/cosmic-session": "3bdf11741a430821ea0114aa670ad3dff8fd8e09",
+    "pop-os/cosmic-session": "3ccf897693f2af81235fcfaf41456b7d031cfb4e",
     "pop-os/cosmic-settings": "3cb538f759fd85bce923ca24aef24f504cd74be7",
     "pop-os/cosmic-settings-daemon": "67c995d5e659173352ca0adfb22108ac1bf91f5a",
     "pop-os/cosmic-sound-theme": "7aabe449093787163c74c25aa1bd4663fb4c324c",
@@ -32,7 +32,7 @@
     "pop-os/launcher": "6390080a98a4a59b4e8196d28de97d3cb4d138ec",
     "pop-os/xdg-desktop-portal-cosmic": "abf258b86338185d2f7ecd243273ffc3deffca5f"
   },
-  "generatedAt": "2026-09-08T22:05:53.349067+00:00",
+  "generatedAt": "2026-09-09T17:29:31.331388+00:00",
   "packagingBase": "ec5d0ea90b38875dbb87b4f5d42c2eaf6fefa470",
   "schema": 1
 }

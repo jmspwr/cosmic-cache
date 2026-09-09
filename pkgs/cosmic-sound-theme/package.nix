@@ -9,7 +9,7 @@
 
 stdenv.mkDerivation (self: {
   pname = "cosmic-sound-theme";
-  version = "1.7.0-unstable-2026-07-01";
+  version = "1.8.0-unstable-2026-07-01";
 
   src = fetchFromGitHub {
     owner = "pop-os";

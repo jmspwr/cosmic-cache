@@ -16,7 +16,7 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "cosmic-edit";
-  version = "1.7.0-unstable-2026-09-03";
+  version = "1.8.0-unstable-2026-09-03";
 
   src = fetchFromGitHub {
     owner = "pop-os";
