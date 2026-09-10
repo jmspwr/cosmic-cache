@@ -4,9 +4,9 @@
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
-      "path": "/nix/store/s77qplm48yc13xb66iwi64llj932dc3z-cosmic-applibrary-1.8.0-unstable-2026-09-01",
+      "path": "/nix/store/87ddczlrnxyy713498rjkifim4fb2yjj-cosmic-applibrary-1.8.0-unstable-2026-09-10",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-01"
+      "version": "1.8.0-unstable-2026-09-10"
     },
     "cosmic-applets": {
       "path": "/nix/store/fda9h7i2j4v3ia6hxld0g527hy2vc4f1-cosmic-applets-1.8.0-unstable-2026-09-08",
@@ -54,9 +54,9 @@
       "version": "1.8.0-unstable-2026-09-02"
     },
     "cosmic-launcher": {
-      "path": "/nix/store/l76004iszaqm0h570jxwlgq4sydfg14x-cosmic-launcher-1.8.0-unstable-2026-09-04",
+      "path": "/nix/store/313p70g6ndk1cmw7h0darzdyclbhmcf7-cosmic-launcher-1.8.0-unstable-2026-09-10",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-04"
+      "version": "1.8.0-unstable-2026-09-10"
     },
     "cosmic-monitor": {
       "path": "/nix/store/fw7bd95iwc84x6san80p792dswhaa8jv-cosmic-monitor-1.8.0-unstable-2026-09-02",
@@ -74,9 +74,9 @@
       "version": "1.8.0-unstable-2026-08-27"
     },
     "cosmic-panel": {
-      "path": "/nix/store/z8rcy2c4p19as8dclz0rm7ds0jdm0q6r-cosmic-panel-1.8.0-unstable-2026-09-04",
+      "path": "/nix/store/g8kk46j1cm21lnyl5y50lxrwk1fa2ysm-cosmic-panel-1.8.0-unstable-2026-09-10",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-04"
+      "version": "1.8.0-unstable-2026-09-10"
     },
     "cosmic-player": {
       "path": "/nix/store/bhyhbkrlhh4q91jafn5v9mk67ffr7cd0-cosmic-player-1.8.0-unstable-2026-09-02",
@@ -159,7 +159,7 @@
       "version": "1.8.0-unstable-2026-09-01"
     }
   },
-  "revision": "e25a04a7995d7ceb1fab2fca0d0dc4c3e93d100f",
+  "revision": "2cdf961e62a27a43890bb4a93c20a43d4c7bc7ba",
   "schema": 2,
-  "verifiedAt": "2026-09-09T18:11:31.495612+00:00"
+  "verifiedAt": "2026-09-10T22:36:05.543994+00:00"
 }
