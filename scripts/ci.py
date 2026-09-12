@@ -175,14 +175,11 @@ def client_digest() -> str:
 
 
 def published() -> dict:
-    url = f"https://raw.githubusercontent.com/{SOURCE_REPO}/cached/cache-proof.json"
     try:
-        with urllib.request.urlopen(url, timeout=30) as response:
-            return json.load(response)
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            return {}
-        raise
+        run("git", "fetch", "--no-tags", "--depth", "1", "origin", "refs/heads/cached", capture=False)
+    except subprocess.CalledProcessError:
+        return {}
+    return json.loads(run("git", "show", "FETCH_HEAD:cache-proof.json"))
 
 
 def github_push_env(token: str) -> dict[str, str]:
