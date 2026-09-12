@@ -1,20 +1,14 @@
 let
   snapshot = builtins.fromJSON (builtins.readFile ./snapshot.json);
-  compat = builtins.fromJSON (builtins.readFile ./compat.json);
   upstream = builtins.getFlake snapshot.url;
-  lib = upstream.inputs.nixpkgs.lib;
+  inherit (upstream.inputs.nixpkgs) lib;
   nixpkgs = upstream.inputs.nixpkgs.legacyPackages.x86_64-linux;
   base = upstream.packages.x86_64-linux;
-  recipe = upstream.outPath + "/pkgs/cosmic-comp/package.nix";
-  canOverrideLibdisplayInfo =
-    builtins.pathExists recipe
-    && lib.hasInfix "libdisplay-info," (builtins.readFile recipe);
-  packages = base // (if (compat.cosmicCompLibdisplayInfo03 or false) && canOverrideLibdisplayInfo then {
+  packages = base // lib.optionalAttrs (lib.functionArgs base.cosmic-comp.override ? libdisplay-info) {
     cosmic-comp = base.cosmic-comp.override { libdisplay-info = nixpkgs.libdisplay-info_0_3; };
-  } else { });
-  names = builtins.filter (name:
-    ((builtins.match "cosmic-.*" name != null && builtins.match "cosmic-ext-.*" name == null)
-      || builtins.elem name [ "pop-launcher" "xdg-desktop-portal-cosmic" "cutecosmic" ])
-    && name != "cosmic-applibrary"
-  ) (builtins.attrNames packages);
-in builtins.listToAttrs (map (name: { inherit name; value = packages.${name}; }) names)
+  };
+  selected = name:
+    (lib.hasPrefix "cosmic-" name && !lib.hasPrefix "cosmic-ext-" name
+      || builtins.elem name [ "cutecosmic" "pop-launcher" "xdg-desktop-portal-cosmic" ])
+    && name != "cosmic-applibrary";
+in lib.filterAttrs (name: _: selected name) packages

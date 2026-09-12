@@ -11,7 +11,10 @@ GitHub Actions resolves one source snapshot, builds the x86_64 COSMIC desktop pa
 standard Linux runners, and uploads their runtime closures to the public `jmspwr` Cachix cache. It does
 not upload an entire NixOS system, personal configuration, proprietary apps, authentication files or
 build secrets. The per-cache Cachix write token is available only to upload/retention steps, not desktop
-compilation. There are no pull-request-triggered privileged builds.
+compilation. There are no pull-request-triggered privileged builds. The workflow polls component HEADs
+hourly and rebuilds only when a component moved or the client definition (`default.nix`, `packages.nix`,
+the workflow, `scripts/ci.py`) changed; the `cached` branch is bound to the exact client definition that
+was verified.
 
 A fresh final runner must obtain every selected output with local compilation disabled and no remote
 builders. The primary COSMIC derivations must not set `preferLocalBuild`. A NixOS module evaluation then
@@ -30,7 +33,7 @@ declarations remain in the user's configuration.
 Add this to the existing imports only after the `cached` branch has a successful publication:
 
 ```nix
-((fetchTarball "https://github.com/jmspwr/cosmic-cache/archive/refs/heads/cached.tar.gz") + "/default.nix")
+"${fetchTarball "https://github.com/jmspwr/cosmic-cache/archive/cached.tar.gz"}/default.nix"
 ```
 
 The module persistently configures `https://jmspwr.cachix.org` and its public signing key for subsequent
@@ -44,7 +47,7 @@ builders disabled:
 ```sh
 sudo nix-build --expr '
 let
-  c = fetchTarball "https://github.com/jmspwr/cosmic-cache/archive/refs/heads/cached.tar.gz";
+  c = fetchTarball "https://github.com/jmspwr/cosmic-cache/archive/cached.tar.gz";
 in builtins.map (p: p.out) (builtins.attrValues (import (c + "/packages.nix")))
 ' \
   --no-out-link \
@@ -76,6 +79,14 @@ Do not enable the source-only `amozeo/nixos-cosmic` import as well.
 The `cached` branch rolls only after completed cache verification. `snapshot.json` records the exact
 source revision that was built; the matching dependency lock is retained. This is build provenance, not
 a user-managed freeze of the moving cached channel.
+
+## Known upstream workaround
+
+`cosmic-comp` depends on the `libdisplay-info-sys` 0.3 crate, which binds the 0.3 C API, while
+`amozeo/nixos-cosmic` builds it against Nixpkgs' default `libdisplay-info` (0.4.0 at the time of writing),
+so upstream's own build fails. `packages.nix` overrides `cosmic-comp` with `libdisplay-info_0_3` — the same
+choice Nixpkgs' own `cosmic-comp` recipe makes — for as long as the upstream recipe takes a `libdisplay-info`
+argument. The override switches itself off when upstream changes that argument; the proper fix is upstream.
 
 ## Resource and spending limits
 

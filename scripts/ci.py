@@ -5,6 +5,7 @@ import argparse
 import base64
 from concurrent.futures import ThreadPoolExecutor
 import datetime
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -18,6 +19,14 @@ import urllib.request
 PACKAGING_GIT = "https://github.com/amozeo/nixos-cosmic.git"
 SOURCE_BRANCH = "source"
 SOURCE_REPO = os.environ.get("GITHUB_REPOSITORY", "jmspwr/cosmic-cache")
+CLIENT_FILES = [
+    ".github/workflows/cache.yml",
+    "cache.json",
+    "default.nix",
+    "packages.nix",
+    "retention-root.nix",
+    "scripts/ci.py",
+]
 
 
 def run(*args: str, capture: bool = True, cwd: str | Path | None = None,
@@ -158,19 +167,22 @@ def source_metadata(revision: str) -> dict | None:
         raise
 
 
-def published_revision() -> str:
-    url = f"https://raw.githubusercontent.com/{SOURCE_REPO}/cached/snapshot.json"
+def client_digest() -> str:
+    digest = hashlib.sha256()
+    for path in CLIENT_FILES:
+        digest.update(path.encode() + b"\0" + Path(path).read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def published() -> dict:
+    url = f"https://raw.githubusercontent.com/{SOURCE_REPO}/cached/cache-proof.json"
     try:
         with urllib.request.urlopen(url, timeout=30) as response:
-            value = json.load(response)
+            return json.load(response)
     except urllib.error.HTTPError as exc:
         if exc.code == 404:
-            return ""
+            return {}
         raise
-    prefix = f"github:{SOURCE_REPO}/"
-    source = value.get("url", "")
-    revision = source[len(prefix):] if source.startswith(prefix) else ""
-    return revision if re.fullmatch(r"[0-9a-f]{40}", revision) else ""
 
 
 def github_push_env(token: str) -> dict[str, str]:
@@ -304,7 +316,11 @@ def resolve() -> None:
     if not names or len(names) > 100:
         raise RuntimeError("Unexpected package matrix size")
 
-    build_needed = published_revision() != revision
+    proof = published()
+    build_needed = (
+        proof.get("revision") != revision
+        or proof.get("clientDigest") != client_digest()
+    )
     with open(os.environ["GITHUB_OUTPUT"], "a") as out:
         out.write("revision=" + revision + "\n")
         out.write("matrix=" + json.dumps(names, separators=(",", ":")) + "\n")
@@ -381,6 +397,8 @@ def verify(revision: str) -> None:
             "schema": 2,
             "verifiedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "revision": revision,
+            "clientDigest": client_digest(),
+            "builderRevision": os.environ["GITHUB_SHA"],
             "method": (
                 "fresh-job nix-build: max-jobs=0, no remote builders; "
                 "exact module-output equality"

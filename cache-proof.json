@@ -1,6 +1,6 @@
 {
-  "builderRevision": "e4df6fcc6563110d3802bbe70115e847051b68ca",
-  "clientDigest": "b1653c057b72f848551757e7defea4fc00a208b1c2bd617b013ac9ebeca7a8d2",
+  "builderRevision": "fe1c2f305614d4562c5834bdc5852cfa5a6f2771",
+  "clientDigest": "6d1678a3cb3ef8ef4e9a569010428f389774219dbfddda7184567ccb465aad81",
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
@@ -161,5 +161,5 @@
   },
   "revision": "de79ca8ff4e428e7a211e8ccdc12184ae8f3a1a2",
   "schema": 2,
-  "verifiedAt": "2026-09-11T22:51:41.889447+00:00"
+  "verifiedAt": "2026-09-12T10:20:48.338489+00:00"
 }
