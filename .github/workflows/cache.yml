@@ -2,7 +2,7 @@ name: Build and verify COSMIC cache
 on:
   workflow_dispatch:
   schedule:
-    - cron: '2/5 * * * *'
+    - cron: '7 * * * *'
   push:
     branches: [main]
 permissions:
@@ -20,9 +20,7 @@ jobs:
     outputs:
       revision: ${{ steps.resolve.outputs.revision }}
       matrix: ${{ steps.resolve.outputs.matrix }}
-      source_build: ${{ steps.resolve.outputs.build }}
-      build: ${{ steps.decision.outputs.build }}
-      client_digest: ${{ steps.decision.outputs.client_digest }}
+      build: ${{ steps.resolve.outputs.build }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,120 +33,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 scripts/ci.py resolve
-      - id: decision
-        name: Require rebuild when client definition changes
-        env:
-          SOURCE_BUILD: ${{ steps.resolve.outputs.build }}
-        run: |
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          import urllib.error
-          import urllib.request
-
-          files = [
-              '.github/workflows/cache.yml',
-              'cache.json',
-              'compat.json',
-              'default.nix',
-              'packages.nix',
-              'retention-root.nix',
-              'scripts/ci.py',
-          ]
-          digest = hashlib.sha256()
-          for path in files:
-              digest.update(path.encode())
-              digest.update(b'\0')
-              with open(path, 'rb') as src:
-                  digest.update(src.read())
-              digest.update(b'\0')
-          digest = digest.hexdigest()
-
-          previous = ''
-          url = 'https://raw.githubusercontent.com/' + os.environ['GITHUB_REPOSITORY'] + '/cached/cache-proof.json'
-          try:
-              with urllib.request.urlopen(url, timeout=30) as response:
-                  previous = json.load(response).get('clientDigest', '')
-          except urllib.error.HTTPError as exc:
-              if exc.code != 404:
-                  raise
-
-          build = os.environ.get('SOURCE_BUILD') == 'true' or previous != digest
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
-              out.write('client_digest=' + digest + '\n')
-              out.write('build=' + ('true' if build else 'false') + '\n')
-          print(f'clientDigest={digest} previous={previous or "none"} build={str(build).lower()}')
-          PY
-  compat-probe:
-    if: needs.prepare.outputs.build == 'true'
-    needs: prepare
-    runs-on: ubuntu-24.04
-    timeout-minutes: 90
-    permissions:
-      contents: write
-    outputs:
-      retired: ${{ steps.probe.outputs.retired }}
-    env:
-      SOURCE_REV: ${{ needs.prepare.outputs.revision }}
-      SOURCE_BUILD: ${{ needs.prepare.outputs.source_build }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
-        with:
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            max-jobs = 1
-            cores = 2
-      - id: probe
-        name: Probe normal cosmic-comp and retire fallback when possible
-        run: |
-          if [ "$SOURCE_BUILD" != "true" ]; then
-            echo "COSMIC source is unchanged; compatibility state cannot have changed"
-            echo "retired=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if ! python3 - <<'PY'
-          import json, sys
-          value = json.load(open('compat.json'))
-          sys.exit(0 if value.get('cosmicCompLibdisplayInfo03', False) else 1)
-          PY
-          then
-            echo "cosmic-comp compatibility fallback is already retired"
-            echo "retired=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          python3 - <<'PY'
-          import json
-          path = 'compat.json'
-          value = json.load(open(path))
-          value['cosmicCompLibdisplayInfo03'] = False
-          with open(path, 'w') as out:
-              json.dump(value, out, indent=2, sort_keys=True)
-              out.write('\n')
-          PY
-
-          if python3 scripts/ci.py build --package cosmic-comp --revision "$SOURCE_REV"; then
-            git fetch origin main
-            if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]; then
-              echo "main changed during compatibility probe; a newer run will decide"
-              echo "retired=true" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add compat.json
-            git commit -m "Retire cosmic-comp libdisplay-info compatibility fallback"
-            git push origin HEAD:main
-            echo "normal cosmic-comp build succeeded; compatibility fallback retired"
-            echo "retired=true" >> "$GITHUB_OUTPUT"
-          else
-            git checkout -- compat.json
-            echo "normal cosmic-comp still fails; keeping libdisplay-info 0.3 compatibility fallback"
-            echo "retired=false" >> "$GITHUB_OUTPUT"
-          fi
   build:
     if: needs.prepare.outputs.build == 'true'
     needs: prepare
@@ -178,15 +62,14 @@ jobs:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: python3 scripts/ci.py push
   publish:
-    if: needs.prepare.outputs.build == 'true' && needs.compat-probe.outputs.retired != 'true'
-    needs: [prepare, build, compat-probe]
+    if: needs.prepare.outputs.build == 'true'
+    needs: [prepare, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
       contents: write
     env:
       SOURCE_REV: ${{ needs.prepare.outputs.revision }}
-      CLIENT_DIGEST: ${{ needs.prepare.outputs.client_digest }}
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
@@ -195,21 +78,6 @@ jobs:
             experimental-features = nix-command flakes
       - name: Verify downloads in a fresh runner and matching NixOS outputs
         run: python3 scripts/ci.py verify
-      - name: Bind proof to exact client definition
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-
-          path = 'cache-proof.json'
-          with open(path) as src:
-              proof = json.load(src)
-          proof['clientDigest'] = os.environ['CLIENT_DIGEST']
-          proof['builderRevision'] = os.environ['GITHUB_SHA']
-          with open(path, 'w') as out:
-              json.dump(proof, out, indent=2, sort_keys=True)
-              out.write('\n')
-          PY
       - name: Protect completed snapshots in Cachix
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
