@@ -124,9 +124,9 @@
       "version": "1.8.0-unstable-2026-07-01"
     },
     "cosmic-store": {
-      "path": "/nix/store/5ym8bl6jnjh42nsfy80j7v91dqr71mk7-cosmic-store-1.8.0-unstable-2026-09-02",
+      "path": "/nix/store/ma2s0759x7rgrlxga58maz1krvipmd35-cosmic-store-1.8.0-unstable-2026-09-14",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-02"
+      "version": "1.8.0-unstable-2026-09-14"
     },
     "cosmic-term": {
       "path": "/nix/store/3b8k7jjcv4h4q6inmxy1lvpinzfqmrbq-cosmic-term-1.8.0-unstable-2026-09-02",
@@ -159,7 +159,7 @@
       "version": "1.8.0-unstable-2026-09-01"
     }
   },
-  "revision": "3250c8701cc99d28f04f7b6e2d32dcac24f1f5c9",
+  "revision": "28c3488e773112c4243057ef4a397010a416a303",
   "schema": 2,
-  "verifiedAt": "2026-09-14T19:56:13.228655+00:00"
+  "verifiedAt": "2026-09-14T23:28:28.376969+00:00"
 }
