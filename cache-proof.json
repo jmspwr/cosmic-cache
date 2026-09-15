@@ -4,14 +4,14 @@
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
-      "path": "/nix/store/yjasfa19mwarh733mymd25w1vrfq246w-cosmic-applibrary-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/icy2kgckp6njj10yhk3x0gx3ydwklval-cosmic-applibrary-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-applets": {
-      "path": "/nix/store/nmb8d24v6w1wrk3kaj5nfl6vmm3i11kg-cosmic-applets-1.8.0-unstable-2026-09-11",
+      "path": "/nix/store/0pavh8jv6wi4fxncimxkni43v9hnn4n0-cosmic-applets-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-11"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-bg": {
       "path": "/nix/store/nv5cp3d0snvfspkiqpa6pj22ab30q7j4-cosmic-bg-1.8.0-unstable-2026-09-11",
@@ -24,19 +24,19 @@
       "version": "1.8.0-unstable-2026-09-11"
     },
     "cosmic-edit": {
-      "path": "/nix/store/w692v6jbwwlrmrvh41djjaav858x9qy4-cosmic-edit-1.8.0-unstable-2026-09-03",
+      "path": "/nix/store/dk0f71m2ig2k7ybh7y90dqzdpr1zvxa8-cosmic-edit-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-03"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-files": {
-      "path": "/nix/store/r8lb6y7l2xpi11ifamab9crw27ngwspa-cosmic-files-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/in7bwih37f6yzczaxk0wjd3nf75wnpca-cosmic-files-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-greeter": {
-      "path": "/nix/store/l6g5y668kv368qwwf9w3i080hpvcds74-cosmic-greeter-1.8.0-unstable-2026-09-11",
+      "path": "/nix/store/bqaxgrysvv72xrsxv4kd639yr311vv0s-cosmic-greeter-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-11"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-icons": {
       "path": "/nix/store/786c9mvdnnps5678simhx5b9jy8s9fmc-cosmic-icons-1.8.0-unstable-2026-08-31",
@@ -49,27 +49,27 @@
       "version": "1.8.0-unstable-2026-02-13"
     },
     "cosmic-initial-setup": {
-      "path": "/nix/store/dhl898ws61i4q5crh2ql3xa4gml09myi-cosmic-initial-setup-1.8.0-unstable-2026-09-02",
+      "path": "/nix/store/ipxq1cj6jydm87pr1as4dp1zi3iw116j-cosmic-initial-setup-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-02"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-launcher": {
-      "path": "/nix/store/313p70g6ndk1cmw7h0darzdyclbhmcf7-cosmic-launcher-1.8.0-unstable-2026-09-10",
+      "path": "/nix/store/5x69zr452fqnv1s5qrh1l6nm6vdg70an-cosmic-launcher-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-10"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-monitor": {
-      "path": "/nix/store/fw7bd95iwc84x6san80p792dswhaa8jv-cosmic-monitor-1.8.0-unstable-2026-09-02",
+      "path": "/nix/store/71bbzcz28p7pbcrzkla53wyccmyykq6q-cosmic-monitor-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-02"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-notifications": {
-      "path": "/nix/store/31yz971sl659nrgibsp8f6c0dl7dsx7m-cosmic-notifications-1.8.0-unstable-2026-09-11",
+      "path": "/nix/store/n3a2cw9g764dw58ksf58b1jrggrhvnkr-cosmic-notifications-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-11"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-osd": {
-      "path": "/nix/store/aarbrygzsliihhc756ghl904q0salik0-cosmic-osd-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/dpyp6f8m65abc06993w1j4kf20gm75pb-cosmic-osd-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
       "version": "1.8.0-unstable-2026-09-15"
     },
@@ -79,9 +79,9 @@
       "version": "1.8.0-unstable-2026-09-14"
     },
     "cosmic-player": {
-      "path": "/nix/store/bhyhbkrlhh4q91jafn5v9mk67ffr7cd0-cosmic-player-1.8.0-unstable-2026-09-02",
+      "path": "/nix/store/fcnpplv2k2piga1qjiz3d22nm0pr0chg-cosmic-player-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-02"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-protocols": {
       "path": "/nix/store/lbpvn41lcjrx9yfwiia86pwsfxpzn63c-cosmic-protocols-0-unstable-2026-09-11",
@@ -94,9 +94,9 @@
       "version": "1.8.0-unstable-2026-02-13"
     },
     "cosmic-reader": {
-      "path": "/nix/store/acr8iji5aj6j8xa6f7hrkzfxb5d94jd3-cosmic-reader-0-unstable-2026-08-24",
+      "path": "/nix/store/xdc6n6h897sb6ybmdanfbddsjha5vqmh-cosmic-reader-0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "0-unstable-2026-08-24"
+      "version": "0-unstable-2026-09-15"
     },
     "cosmic-screenshot": {
       "path": "/nix/store/bjg2iian056pymv3kq2871b99wxgvcwr-cosmic-screenshot-1.8.0-unstable-2026-08-24",
@@ -109,14 +109,14 @@
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-settings": {
-      "path": "/nix/store/xgk1pay333qhssn861i8gfy2xmbwccwa-cosmic-settings-1.8.0-unstable-2026-09-11",
+      "path": "/nix/store/kzackphiw2r9szqxi2xgvkwax6lfqwkp-cosmic-settings-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-11"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-settings-daemon": {
-      "path": "/nix/store/17y177cg504s7hc3g7s7yk4wry6qlrvl-cosmic-settings-daemon-1.8.0-unstable-2026-08-28",
+      "path": "/nix/store/pxh7pgz7hiqkrfvskrf2ga2qjxcq9pd4-cosmic-settings-daemon-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-08-28"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-sound-theme": {
       "path": "/nix/store/5svyb3anivg7q6jx88xwy9njryk1f9n4-cosmic-sound-theme-1.8.0-unstable-2026-07-01",
@@ -124,14 +124,14 @@
       "version": "1.8.0-unstable-2026-07-01"
     },
     "cosmic-store": {
-      "path": "/nix/store/bk06i2mqinm3agami5fhdrz2mijb692d-cosmic-store-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/6v5qx959n4yl80rnswn2qa82b4mcybgx-cosmic-store-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-term": {
-      "path": "/nix/store/3b8k7jjcv4h4q6inmxy1lvpinzfqmrbq-cosmic-term-1.8.0-unstable-2026-09-02",
+      "path": "/nix/store/h0n756xg3ycqda72j5arr1y744h33dyr-cosmic-term-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-02"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-wallpapers": {
       "path": "/nix/store/4q8qpdr2fr8g09bviy7a2n267fypc7sr-cosmic-wallpapers-1.8.0-unstable-2026-08-21",
@@ -139,9 +139,9 @@
       "version": "1.8.0-unstable-2026-08-21"
     },
     "cosmic-workspaces-epoch": {
-      "path": "/nix/store/mpl588g2w1nrbpwzyv4is0ij74xwshj5-cosmic-workspaces-epoch-1.8.0-unstable-2026-09-01",
+      "path": "/nix/store/6gflzwz0srpayj9kxfhm5yk4d3g634kg-cosmic-workspaces-epoch-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-01"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cutecosmic": {
       "path": "/nix/store/rhfmd9n3i5v7hvgg4annicxm8y1223wq-cutecosmic-0.2.0-unstable-2026-08-15",
@@ -154,12 +154,12 @@
       "version": "epoch-1.8.0-unstable-2026-08-24"
     },
     "xdg-desktop-portal-cosmic": {
-      "path": "/nix/store/x2mzlmzripp2pvnfsl68vvyaih8a3fcl-xdg-desktop-portal-cosmic-1.8.0-unstable-2026-09-01",
+      "path": "/nix/store/g6yxw82n7b2wvl84mb9m1gc8cd3vcqlz-xdg-desktop-portal-cosmic-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-01"
+      "version": "1.8.0-unstable-2026-09-15"
     }
   },
-  "revision": "7fc23169af1f853dd967a3ce25bf975f91cda162",
+  "revision": "dd31b4a2f449c65754c017be13ab3a6610a1a86e",
   "schema": 2,
-  "verifiedAt": "2026-09-15T18:35:17.893123+00:00"
+  "verifiedAt": "2026-09-15T22:59:45.917606+00:00"
 }
