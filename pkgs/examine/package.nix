@@ -13,13 +13,13 @@
 
 rustPlatform.buildRustPackage {
   pname = "examine";
-  version = "2.0.0-unstable-2026-07-17";
+  version = "2.0.0-unstable-2026-09-10";
 
   src = fetchFromGitHub {
     owner = "cosmic-utils";
     repo = "examine";
-    rev = "3a190d4c628b0be7e65844f89efda260b1f59e45";
-    hash = "sha256-cOjq99Qt2E1G4oKcNapMYJBfyqJwoePlBUwtdiO6PK0=";
+    rev = "ab61dfac58ee1a1eb42e7f7358673a6d22d1c81d";
+    hash = "sha256-F7hKG3GpDfIRZ+OAl4pUHFYvOUB3bs08aEy00hXZtqY=";
   };
 
   cargoHash = "sha256-V+ClzaG7LnkOl84j5mVGJPTLVfaVqxaSH7ufmjXdwyM=";
