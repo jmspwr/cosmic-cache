@@ -4,9 +4,9 @@
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
-      "path": "/nix/store/icy2kgckp6njj10yhk3x0gx3ydwklval-cosmic-applibrary-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/0z7zz0vk380shpf4yjk7p4l7w0jczsxw-cosmic-applibrary-1.8.0-unstable-2026-09-16",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-15"
+      "version": "1.8.0-unstable-2026-09-16"
     },
     "cosmic-applets": {
       "path": "/nix/store/0pavh8jv6wi4fxncimxkni43v9hnn4n0-cosmic-applets-1.8.0-unstable-2026-09-15",
@@ -19,9 +19,9 @@
       "version": "1.8.0-unstable-2026-09-11"
     },
     "cosmic-comp": {
-      "path": "/nix/store/kfm1vqqng33zpgg17xwza92pg7pv5718-cosmic-comp-1.8.0-unstable-2026-09-11",
+      "path": "/nix/store/laykc4d54a6h3hxi683hfy2qk7pqp8r2-cosmic-comp-1.8.0-unstable-2026-09-16",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-11"
+      "version": "1.8.0-unstable-2026-09-16"
     },
     "cosmic-edit": {
       "path": "/nix/store/dk0f71m2ig2k7ybh7y90dqzdpr1zvxa8-cosmic-edit-1.8.0-unstable-2026-09-15",
@@ -34,9 +34,9 @@
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-greeter": {
-      "path": "/nix/store/bqaxgrysvv72xrsxv4kd639yr311vv0s-cosmic-greeter-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/9aa75wjd73ah89h8827adgn3p0w1gyml-cosmic-greeter-1.8.0-unstable-2026-09-16",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-15"
+      "version": "1.8.0-unstable-2026-09-16"
     },
     "cosmic-icons": {
       "path": "/nix/store/786c9mvdnnps5678simhx5b9jy8s9fmc-cosmic-icons-1.8.0-unstable-2026-08-31",
@@ -159,7 +159,7 @@
       "version": "1.8.0-unstable-2026-09-15"
     }
   },
-  "revision": "a4c4888fee2ed9338bc8727554e60c53af134e50",
+  "revision": "2fcb3a0dc826e66ed2b8ee131b91e6efda3ed67d",
   "schema": 2,
-  "verifiedAt": "2026-09-16T01:54:19.160933+00:00"
+  "verifiedAt": "2026-09-16T18:55:07.053052+00:00"
 }
