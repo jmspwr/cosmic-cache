@@ -74,9 +74,9 @@
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-panel": {
-      "path": "/nix/store/9mfikrkjl208f06p001kj5g8f3rh3p5h-cosmic-panel-1.8.0-unstable-2026-09-14",
+      "path": "/nix/store/6l2z1jb1gkd336j3w90x0fl0569mxi9l-cosmic-panel-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-14"
+      "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-player": {
       "path": "/nix/store/fcnpplv2k2piga1qjiz3d22nm0pr0chg-cosmic-player-1.8.0-unstable-2026-09-15",
@@ -129,7 +129,7 @@
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-term": {
-      "path": "/nix/store/h0n756xg3ycqda72j5arr1y744h33dyr-cosmic-term-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/8zbhxi3hhxfgwbvrk3cw3gmxlra4bdvp-cosmic-term-1.8.0-unstable-2026-09-15",
       "preferLocalBuild": false,
       "version": "1.8.0-unstable-2026-09-15"
     },
@@ -159,7 +159,7 @@
       "version": "1.8.0-unstable-2026-09-15"
     }
   },
-  "revision": "dd31b4a2f449c65754c017be13ab3a6610a1a86e",
+  "revision": "a4c4888fee2ed9338bc8727554e60c53af134e50",
   "schema": 2,
-  "verifiedAt": "2026-09-15T22:59:45.917606+00:00"
+  "verifiedAt": "2026-09-16T01:54:19.160933+00:00"
 }
