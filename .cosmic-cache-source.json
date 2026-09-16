@@ -2,12 +2,12 @@
   "components": {
     "IgKh/cutecosmic": "5fa7c228ce04c5310c61dd975e940397711e3cef",
     "pop-os/cosmic-applets": "0bfc3da2cb838b702bc75809bf9d9288d77e366f",
-    "pop-os/cosmic-applibrary": "3dee59e0ae5d6fb41dd12b33906bc8f41e791dfd",
+    "pop-os/cosmic-applibrary": "0a3996de82c264095ade047661f7a3088f99013e",
     "pop-os/cosmic-bg": "9d82a34dab4e73d90ba66c9f72d18d0f9b8be208",
-    "pop-os/cosmic-comp": "a7349b72e39fd91d7ed25eddb2fa24b900a615d5",
+    "pop-os/cosmic-comp": "651f701f84e46d0262a129cb9ac30537d648cb08",
     "pop-os/cosmic-edit": "1054b6a7fd5b9dd59b8026902a0121775719d720",
     "pop-os/cosmic-files": "fe71aca0e54d168443ef397e596e8d3e02eb1b46",
-    "pop-os/cosmic-greeter": "bb5c7e12a4306513ee4ad0be3fb5cea991268d02",
+    "pop-os/cosmic-greeter": "0b0d2925ffa18ffb9a7f7175f90097bb502fbf43",
     "pop-os/cosmic-icons": "343c007f37cd71716e68f01c43ecf2764b7f7c47",
     "pop-os/cosmic-idle": "c95d066b5b640509a6369634b669ca60dc50e168",
     "pop-os/cosmic-initial-setup": "9b5a9490e60966ebf0565267ce0e9fca368dfbd1",
@@ -32,7 +32,7 @@
     "pop-os/launcher": "6390080a98a4a59b4e8196d28de97d3cb4d138ec",
     "pop-os/xdg-desktop-portal-cosmic": "2f41161176368840c67e2de9b8a24786accb100c"
   },
-  "generatedAt": "2026-09-16T01:32:17.209673+00:00",
+  "generatedAt": "2026-09-16T18:17:53.363357+00:00",
   "packagingBase": "a82445d53557aa573a7349a058d88c93ffa22e15",
   "schema": 1
 }
