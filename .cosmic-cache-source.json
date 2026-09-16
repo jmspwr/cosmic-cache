@@ -5,7 +5,7 @@
     "pop-os/cosmic-applibrary": "0a3996de82c264095ade047661f7a3088f99013e",
     "pop-os/cosmic-bg": "9d82a34dab4e73d90ba66c9f72d18d0f9b8be208",
     "pop-os/cosmic-comp": "651f701f84e46d0262a129cb9ac30537d648cb08",
-    "pop-os/cosmic-edit": "1054b6a7fd5b9dd59b8026902a0121775719d720",
+    "pop-os/cosmic-edit": "14aba662280388f3595afc9e092751f053a5889d",
     "pop-os/cosmic-files": "fe71aca0e54d168443ef397e596e8d3e02eb1b46",
     "pop-os/cosmic-greeter": "0b0d2925ffa18ffb9a7f7175f90097bb502fbf43",
     "pop-os/cosmic-icons": "343c007f37cd71716e68f01c43ecf2764b7f7c47",
@@ -13,7 +13,7 @@
     "pop-os/cosmic-initial-setup": "9b5a9490e60966ebf0565267ce0e9fca368dfbd1",
     "pop-os/cosmic-launcher": "6ce34750384dcb677639b4783e3e95bfba9a83aa",
     "pop-os/cosmic-monitor": "85158bd58e74a735442043254f399ff6e1e99073",
-    "pop-os/cosmic-notifications": "cece6820ec1f082477efaa6b256c350744fc3405",
+    "pop-os/cosmic-notifications": "aa4dac2702506395ab76da1f6755e03b2ccb0db8",
     "pop-os/cosmic-osd": "3faadf56bdaea4b088ea8dc5e808b167cec86de3",
     "pop-os/cosmic-panel": "d6387697faf96f1a9cb04e580753089eec350249",
     "pop-os/cosmic-player": "66b3f34335a500ce5dc93880d06f7ae94905872f",
@@ -21,7 +21,7 @@
     "pop-os/cosmic-randr": "6e8e795970fa06d434af22775e415b517f7552d3",
     "pop-os/cosmic-reader": "9a34cc93c817f07be9b3540faa5d146c2a891e64",
     "pop-os/cosmic-screenshot": "5ddcf1804192ff98823bd37a778286db5a00f3dd",
-    "pop-os/cosmic-session": "cd90a03e3fa525a4ff9442fdd341859c3ced2ebb",
+    "pop-os/cosmic-session": "2770d1155ae1503dfaa7807548363e77cb849e9c",
     "pop-os/cosmic-settings": "e6e2acc18878d224ba5027da44ee228384385c65",
     "pop-os/cosmic-settings-daemon": "ac6190062c67dd687c2c1ea66e6cbea4dc9261b9",
     "pop-os/cosmic-sound-theme": "7aabe449093787163c74c25aa1bd4663fb4c324c",
@@ -32,7 +32,7 @@
     "pop-os/launcher": "6390080a98a4a59b4e8196d28de97d3cb4d138ec",
     "pop-os/xdg-desktop-portal-cosmic": "2f41161176368840c67e2de9b8a24786accb100c"
   },
-  "generatedAt": "2026-09-16T18:17:53.363357+00:00",
+  "generatedAt": "2026-09-16T22:14:44.008738+00:00",
   "packagingBase": "a82445d53557aa573a7349a058d88c93ffa22e15",
   "schema": 1
 }
