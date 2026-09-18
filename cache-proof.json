@@ -54,9 +54,9 @@
       "version": "1.8.0-unstable-2026-09-15"
     },
     "cosmic-launcher": {
-      "path": "/nix/store/5x69zr452fqnv1s5qrh1l6nm6vdg70an-cosmic-launcher-1.8.0-unstable-2026-09-15",
+      "path": "/nix/store/mzxmij2pv85cdk4zp9jhk5d0zm8j1pid-cosmic-launcher-1.8.0-unstable-2026-09-17",
       "preferLocalBuild": false,
-      "version": "1.8.0-unstable-2026-09-15"
+      "version": "1.8.0-unstable-2026-09-17"
     },
     "cosmic-monitor": {
       "path": "/nix/store/71bbzcz28p7pbcrzkla53wyccmyykq6q-cosmic-monitor-1.8.0-unstable-2026-09-15",
@@ -159,7 +159,7 @@
       "version": "1.8.0-unstable-2026-09-15"
     }
   },
-  "revision": "d724fbec40f561b22c079ed12f30b4f9327b2397",
+  "revision": "f45f75f0e590333f7b271d0a31fea9ba1bb96213",
   "schema": 2,
-  "verifiedAt": "2026-09-16T22:37:51.810752+00:00"
+  "verifiedAt": "2026-09-17T23:59:49.443725+00:00"
 }
