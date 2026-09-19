@@ -6,6 +6,13 @@ let
   plasmaOverlay = _: _: { inherit (packages) kdePackages; };
 in
 {
+  # The host module may request packages removed from this newer KDE scope.
+  # Import the matching module as a function so disabling the host's path also
+  # works when the host and packaging snapshot happen to be the same Nixpkgs.
+  disabledModules = [ "services/desktop-managers/plasma6.nix" ];
+  imports = [
+    (import (packages.pkgs.path + "/nixos/modules/services/desktop-managers/plasma6.nix"))
+  ];
   assertions = [
     {
       assertion = pkgs.stdenv.hostPlatform.system == "x86_64-linux";

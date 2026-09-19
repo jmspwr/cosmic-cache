@@ -25,6 +25,7 @@ CLIENT_FILES = [
     ".github/workflows/plasma.yml",
     "cache.json",
     "plasma/ci.py",
+    "plasma/check-integration.nix",
     "plasma/default.nix",
     "plasma/packages.nix",
     "plasma/profile.nix",
@@ -326,22 +327,28 @@ def verify(revision: str) -> None:
             "packages": info,
         },
     )
-    t = tree(revision, value["sha256"])
-    expression = (
-        f'let n = import ({t} + "/nixos") {{ system = "x86_64-linux"; configuration = {{ imports = [ ./default.nix ./profile.nix ]; '
-        '}; }; '
-        'p = (import ./packages.nix).selected; '
-        'in builtins.all (a: a.assertion) n.config.assertions && '
-        'builtins.all (name: n.pkgs.kdePackages.${name}.outPath == p.${name}.outPath) (builtins.attrNames p)'
-    )
     try:
-        if run("nix", "eval", "--impure", "--json", "--expr", expression) != "true":
-            raise RuntimeError("NixOS integration assertions or output identity failed")
+        # Consumers have their own Nixpkgs. Check the complete system with both
+        # the packaging tree and a separate current host, not just lazy assertions.
+        host_revision = github_json(f"https://api.github.com/repos/{NIXPKGS}/commits/nixos-unstable")["sha"]
+        host_hash = run("nix-prefetch-url", "--unpack", tarball(host_revision))
+        hosts = {"packaging": (revision, value["sha256"]), "nixos-unstable": (host_revision, host_hash)}
+        checks = {}
+        for name, (host_rev, host_sha256) in hosts.items():
+            result = json.loads(run(
+                "nix", "eval", "--impure", "--json", "--expr",
+                f'(import ./check-integration.nix) {{ hostNixpkgs = {tree(host_rev, host_sha256)}; }}',
+            ))
+            checks[name] = {"revision": host_rev, "sha256": host_sha256, **result}
+        proof = json.loads(Path("cache-proof.json").read_text())
+        proof["integrationChecks"] = checks
+        proof["method"] += "; full NixOS system evaluation on packaging and nixos-unstable hosts"
+        dump("cache-proof.json", proof)
     except Exception:
         Path("cache-proof.json").unlink()
         raise
 
-    print("Cached package outputs and module-output identity verified")
+    print("Cached outputs, module-output identity and complete NixOS system evaluations verified")
 
 
 def retain() -> None:

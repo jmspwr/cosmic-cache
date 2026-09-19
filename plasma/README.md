@@ -18,7 +18,8 @@ Builds current Plasma Git sources for x86_64-linux and publishes verified binari
    five waves, grouping dependent packages onto the same runner within a wave. Independent batches
    build in parallel; later waves download non-debug outputs uploaded by earlier waves.
 4. On a fresh runner, download **every non-debug output of every required Plasma package**, with local and
-   remote compilation disabled. Check NixOS assertions and the module's exact selected output paths.
+   remote compilation disabled. Evaluate the full NixOS system derivation with both the packaging
+   tree and a separate current `nixos-unstable` host, including assertions and exact selected output paths.
 5. Protect those outputs and their runtime closures with a Cachix retention root, keeping one
    revision. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
    client code and `cache-proof.json`.
@@ -53,7 +54,9 @@ imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/pla
 ```
 
 Keep `services.desktopManager.plasma6.enable = true` in your configuration. The module supplies a
-coherent `kdePackages` scope, checks it against the published proof, and configures the public cache.
+coherent `kdePackages` scope and its matching Plasma NixOS module, checks the packages against the
+published proof, and configures the public cache. It replaces the host's Plasma module so older
+package lists cannot request removed components such as `kwin-x11` or `kgamma`.
 It leaves the rest of your system on your own Nixpkgs channel. Custom overlays that replace the
 verified Plasma outputs fail an assertion.
 

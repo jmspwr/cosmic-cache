@@ -66,6 +66,36 @@ class SchedulingTests(unittest.TestCase):
 
 
 class PipelineTests(unittest.TestCase):
+    def test_failed_host_system_evaluation_removes_publication_proof(self):
+        revision = 'a' * 40
+        host_revision = 'b' * 40
+        value = {'sha256': 'packaging-hash', 'mode': 'git', 'sourceDigest': 'sources'}
+        evaluations = []
+
+        def run(*args, **kwargs):
+            if args[0] == 'nix-prefetch-url':
+                return 'host-hash'
+            if args[:2] == ('nix', 'eval'):
+                evaluations.append(args[-1])
+                if host_revision in args[-1]:
+                    raise subprocess.CalledProcessError(1, args)
+                return json.dumps({'systemDerivation': '/nix/store/packaging-system.drv'})
+            return ''
+
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            with patch.dict(os.environ, GITHUB_SHA='c' * 40), \
+                 patch.object(ci, 'snapshot', return_value=value), \
+                 patch.object(ci, 'package_info', return_value={
+                     'plasma-workspace': {'version': '6.8.80', 'preferLocalBuild': False}}), \
+                 patch.object(ci, 'client_digest', return_value='client'), \
+                 patch.object(ci, 'options', return_value=[]), \
+                 patch.object(ci, 'github_json', return_value={'sha': host_revision}), \
+                 patch.object(ci, 'run', side_effect=run):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    ci.verify(revision)
+            self.assertFalse(Path('cache-proof.json').exists())
+            self.assertEqual(len(evaluations), 2)
+
     def test_resume_preserves_sources_without_polling_new_heads(self):
         revision = 'a' * 40
         heads = {'kwin': {'revision': 'b' * 40, 'url': 'https://example.invalid/source'}}

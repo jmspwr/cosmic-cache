@@ -10,7 +10,8 @@ Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, publish
 
 Each workflow polls hourly and builds only changed snapshots. It advances its verified branch
 only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
-evaluation checks the module's assertions and exact package paths. Cachix retention protects the
+evaluation checks the module's assertions and exact package paths. Plasma also evaluates the full
+system derivation against its packaging tree and a separate current `nixos-unstable` host. Cachix retention protects the
 latest publication for each desktop. A failure in one desktop does not hold back the other.
 
 ## Install
@@ -59,6 +60,8 @@ your configuration uses one. COSMIC requires flake support internally even for a
   builds independent applications on separate runners, and retains their runtime closures.
 - [`plasma/`](plasma): resolves exact KDE Invent commits and hashes, overrides the complete KDE
   package scope's sources, and groups actual Plasma dependencies into five parallel build waves.
+  The consumer imports the matching Plasma NixOS module alongside those packages, avoiding
+  obsolete package references in the host's Plasma module.
   Every non-debug output of every required Plasma package is uploaded, verified and retained,
   including headers and session files. Separate debug symbols and their source trees are not
   explicitly uploaded. Manual `beta` mode uses the packaging tree's release tarballs.
