@@ -1,0 +1,60 @@
+name: Build a Plasma beta into the cache
+on:
+  workflow_dispatch:
+    inputs:
+      rev:
+        description: nixpkgs commit to build (head of NixOS/nixpkgs#561955)
+        required: true
+        default: b730141a8c72527aa3710467d46d06994efbc640
+      version:
+        description: Plasma version string that commit carries
+        required: true
+        default: 6.7.90
+permissions:
+  contents: read
+env:
+  TREE: github:NixOS/nixpkgs/${{ inputs.rev }}
+  CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+    substituters = https://cache.nixos.org https://jmspwr.cachix.org
+    trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= jmspwr.cachix.org-1:Ta+OFK/CrEpoz6PfkAuz2le3tZoTyFKshQpTwm5iccw=
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      shards: ${{ steps.list.outputs.shards }}
+    steps:
+      - uses: cachix/install-nix-action@v31
+      - id: list
+        run: |
+          names=$(nix eval --json "$TREE#kdePackages" --apply 'ps: builtins.filter (n: let r = builtins.tryEval (ps.${n}.version or ""); in r.success && r.value == "${{ inputs.version }}" && !(builtins.elem n [ "kwin" "plasma-workspace" ])) (builtins.attrNames ps)')
+          echo "shards=$(echo "$names" | jq -c '[_nwise(10)]')" >> "$GITHUB_OUTPUT"
+  kwin:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: cachix/install-nix-action@v31
+      - run: nix build --no-link --print-out-paths "$TREE#kdePackages.kwin^*" | xargs nix run nixpkgs#cachix -- push jmspwr
+  workspace:
+    needs: kwin
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    steps:
+      - uses: cachix/install-nix-action@v31
+      - run: nix build --no-link --print-out-paths "$TREE#kdePackages.plasma-workspace^*" | xargs nix run nixpkgs#cachix -- push jmspwr
+  rest:
+    needs: [prepare, workspace]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.prepare.outputs.shards) }}
+    steps:
+      - uses: cachix/install-nix-action@v31
+      - run: |
+          for name in ${{ join(matrix.shard, ' ') }}; do
+            nix build --no-link --print-out-paths "$TREE#kdePackages.$name^*" | xargs nix run nixpkgs#cachix -- push jmspwr || echo "::warning::$name failed"
+          done
