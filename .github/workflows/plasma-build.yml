@@ -40,7 +40,7 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
             max-jobs = 1
-      - name: Build all batch outputs using earlier uploads
+      - name: Build non-debug batch outputs using earlier uploads
         run: python3 -m plasma.ci build
       - name: Upload the batch and its runtime closures
         env:

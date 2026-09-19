@@ -257,7 +257,7 @@ def push() -> None:
     paths = Path("built-output.txt").read_text().split()
     if not os.environ.get("CACHIX_AUTH_TOKEN"):
         raise RuntimeError("CACHIX_AUTH_TOKEN is not configured")
-    run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", cache()["name"], *paths, capture=False)
+    run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", cache()["name"], *shared.PUSH_OPTIONS, *paths, capture=False)
 
 
 def package_info() -> dict:
@@ -293,7 +293,7 @@ def verify(revision: str) -> None:
             "builderRevision": os.environ["GITHUB_SHA"],
             "method": (
                 "fresh-job nix-build: max-jobs=0, no remote builders; "
-                "all required Plasma outputs; exact module-output equality"
+                "all non-debug outputs of required Plasma packages; exact module-output equality"
             ),
             "packages": info,
         },
@@ -319,10 +319,10 @@ def verify(revision: str) -> None:
 def retain() -> None:
     root = run("nix-build", "retention-root.nix", "--no-out-link", *options())
     c = cache()["name"]
-    run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", c, root, capture=False)
+    run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", c, *shared.PUSH_OPTIONS, root, capture=False)
     run(
         "nix", "run", "--file", "packages.nix", "cachix", "--", "pin", c,
-        "plasma-x86_64-linux", root, "--keep-revisions", "2", capture=False,
+        "plasma-x86_64-linux", root, "--keep-revisions", "1", capture=False,
     )
 
 

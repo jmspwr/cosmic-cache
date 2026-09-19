@@ -16,11 +16,11 @@ Builds current Plasma Git sources for x86_64-linux and publishes verified binari
 3. Discover the packages installed by the representative laptop configuration in `profile.nix`.
    Derive their Plasma dependencies from Nix's actual derivation closures. Divide the graph into
    five waves, grouping dependent packages onto the same runner within a wave. Independent batches
-   build in parallel; later waves download all outputs uploaded by earlier waves.
-4. On a fresh runner, download **every output of every required Plasma package**, with local and
+   build in parallel; later waves download non-debug outputs uploaded by earlier waves.
+4. On a fresh runner, download **every non-debug output of every required Plasma package**, with local and
    remote compilation disabled. Check NixOS assertions and the module's exact selected output paths.
-5. Protect those outputs and their runtime closures with a Cachix retention root, keeping two
-   revisions. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
+5. Protect those outputs and their runtime closures with a Cachix retention root, keeping one
+   revision. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
    client code and `cache-proof.json`.
 
 Unchanged component heads, packaging and builder code skip evaluation and builds. Interrupted or
@@ -32,6 +32,17 @@ The package graph avoids duplicate **Plasma** compilation between batches; unrel
 can still be built on multiple runners when neither configured cache provides them. Git recipes can
 also need new dependencies or adapted patches as upstream evolves. Passing the publication checks
 proves substitution and package identity, not that the desktop works on every machine.
+
+Separate `debug` outputs are intentionally omitted from uploads, verification and retention.
+They contain debugging symbols and reference source trees; neither is required to run Plasma.
+Package recipes, source commits and output paths are unchanged, so existing non-debug binaries
+remain reusable. Headers, build tools and session files remain cached. This is an output
+selection policy, not a `separateDebugInfo` override that would force a rebuild of the desktop.
+If a required output genuinely references a debug path, its closure still includes that path.
+
+Only the latest successful revision is protected. A new upload needs headroom alongside it;
+old unpinned builds are eligible for Cachix garbage collection. Changing this policy does not
+immediately delete already-uploaded data. Local NixOS generations are unaffected.
 
 ## Use
 

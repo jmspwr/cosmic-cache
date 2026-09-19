@@ -11,7 +11,7 @@ Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, publish
 Each workflow polls hourly, builds only changed snapshots, and advances its own verified branch
 only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
 evaluation checks the module's assertions and exact package paths. Cachix retention protects the
-latest two publications for each desktop. A failure in one desktop does not hold back the other.
+latest publication for each desktop. A failure in one desktop does not hold back the other.
 
 ## Install
 
@@ -51,8 +51,9 @@ a recently fetched channel tarball until its TTL expires.
   builds independent applications on separate runners, and retains their runtime closures.
 - [`plasma/`](plasma): resolves exact KDE Invent commits and hashes, overrides the complete KDE
   package scope's sources, and groups actual Plasma dependencies into five parallel build waves.
-  Every output of every required Plasma package is uploaded, verified and retained, including
-  headers and session files. Manual `beta` mode uses the packaging tree's release tarballs.
+  Every non-debug output of every required Plasma package is uploaded, verified and retained,
+  including headers and session files. Separate debug symbols and their source trees are not
+  explicitly uploaded. Manual `beta` mode uses the packaging tree's release tarballs.
 - [`scripts/cache.py`](scripts/cache.py): shared cache configuration, digest, transport and
   fast-forward publication. Network errors never masquerade as an unpublished cache.
 
@@ -60,6 +61,15 @@ New pushes queue behind active builds so they cannot cancel uploads or retention
 Published snapshots record exact commits for reproducibility while the channels keep rolling.
 Git source changes can require updated packaging or patches; failed builds preserve the previous
 publication. No failed Git build silently publishes a beta instead.
+
+New uploads use XZ level 6 to favor storage density over compression speed. Cachix does not
+recompress already-present paths, and paths available in the official NixOS cache are skipped.
+To fit a small Cachix quota, retention keeps one successful revision per desktop. This does not
+remove local NixOS generations. Older remote binaries become eligible for garbage collection;
+they are not guaranteed for a fresh rollback download. Uploading the next revision still needs
+headroom alongside the current one. Previously uploaded debug outputs or old beta builds are not
+deleted by changing the output selection; Cachix must reclaim eligible unpinned data. Debug
+symbols can still be built locally when needed, using the unchanged package derivations.
 
 Only standard public GitHub runners are used. Desktop compilation has no Cachix write token;
 only upload and retention steps receive it. Pull requests run checks without cache credentials.
