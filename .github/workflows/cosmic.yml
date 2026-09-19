@@ -9,7 +9,7 @@ permissions:
   contents: read
 concurrency:
   group: cosmic-cache
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: false
 jobs:
   prepare:
     if: github.event.repository.visibility == 'public'
@@ -32,7 +32,7 @@ jobs:
       - id: resolve
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/ci.py resolve
+        run: python3 -m cosmic.ci resolve
   build:
     if: needs.prepare.outputs.build == 'true'
     needs: prepare
@@ -56,11 +56,11 @@ jobs:
             max-jobs = 1
             cores = 2
       - name: Build one COSMIC output
-        run: python3 scripts/ci.py build
+        run: python3 -m cosmic.ci build
       - name: Upload runtime closure only
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-        run: python3 scripts/ci.py push
+        run: python3 -m cosmic.ci push
   publish:
     if: needs.prepare.outputs.build == 'true'
     needs: [prepare, build]
@@ -77,10 +77,10 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
       - name: Verify downloads in a fresh runner and matching NixOS outputs
-        run: python3 scripts/ci.py verify
+        run: python3 -m cosmic.ci verify
       - name: Protect completed snapshots in Cachix
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
-        run: python3 scripts/ci.py retain
+        run: python3 -m cosmic.ci retain
       - name: Advance cached branch without force-pushing
-        run: python3 scripts/ci.py publish
+        run: python3 -m cosmic.ci publish
