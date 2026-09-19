@@ -97,7 +97,7 @@ argument. The override switches itself off when upstream changes that argument; 
 Only standard `ubuntu-24.04` GitHub-hosted runners are selected, and the workflow is gated to public
 repositories. No paid runner, subscription, trial or billing change is created.
 
-Only runtime closures are pushed. A named Cachix retention root protects completed snapshots. Older
+Only runtime closures are pushed. A named Cachix retention root protects the latest completed snapshot. Older
 remote cache entries may become eligible for Cachix's own storage management. This does not delete local
 files, NixOS generations or local Nix store entries. No local garbage-collection, pruning or deletion
 commands are included.

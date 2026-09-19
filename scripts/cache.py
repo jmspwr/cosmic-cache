@@ -9,6 +9,8 @@ import re
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
+# Spend runner CPU on compression instead of scarce persistent cache storage.
+PUSH_OPTIONS = ("--compression-method", "xz", "--compression-level", "6")
 
 
 def run(*args: str, capture: bool = True, cwd: str | Path | None = None,

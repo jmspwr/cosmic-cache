@@ -309,7 +309,7 @@ def push() -> None:
         raise RuntimeError("CACHIX_AUTH_TOKEN is not configured")
     run(
         "nix", "run", "nixpkgs#cachix", "--", "push",
-        cache()["name"], root, capture=False,
+        cache()["name"], *shared.PUSH_OPTIONS, root, capture=False,
     )
 
 
@@ -374,10 +374,10 @@ def verify(revision: str) -> None:
 def retain() -> None:
     root = run("nix-build", "retention-root.nix", "--no-out-link", *options())
     c = cache()["name"]
-    run("nix", "run", "nixpkgs#cachix", "--", "push", c, root, capture=False)
+    run("nix", "run", "nixpkgs#cachix", "--", "push", c, *shared.PUSH_OPTIONS, root, capture=False)
     run(
         "nix", "run", "nixpkgs#cachix", "--", "pin", c,
-        "cosmic-x86_64-linux", root, "--keep-revisions", "2", capture=False,
+        "cosmic-x86_64-linux", root, "--keep-revisions", "1", capture=False,
     )
 
 

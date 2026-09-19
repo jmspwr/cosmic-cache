@@ -83,7 +83,7 @@ class PipelineTests(unittest.TestCase):
             self.assertIn('build=false', output.read_text())
 
 
-    def test_build_requests_all_outputs_of_every_batch_member(self):
+    def test_build_requests_curated_outputs_of_every_batch_member(self):
         with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
             with patch.object(ci, 'snapshot', return_value={'needed': ['a', 'b']}), \
                  patch.object(ci, 'options', return_value=[]), \
