@@ -61,7 +61,7 @@ def published(branch: str, desktop: str) -> dict:
     if not run("git", "ls-remote", "--heads", "origin", f"refs/heads/{branch}"):
         return {}
     run("git", "fetch", "--no-tags", "--depth", "1", "origin", f"refs/heads/{branch}", capture=False)
-    files = run("git", "ls-tree", "-r", "--name-only", "FETCH_HEAD").splitlines()
+    files = run("git", "ls-tree", "--full-tree", "-r", "--name-only", "FETCH_HEAD").splitlines()
     # Existing COSMIC publications predate the desktop subdirectories.
     prefix = f"{desktop}/" if f"{desktop}/cache-proof.json" in files else ""
     proof = json.loads(run("git", "show", "FETCH_HEAD:" + prefix + "cache-proof.json"))

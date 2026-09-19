@@ -82,5 +82,5 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: python3 -m cosmic.ci retain
-      - name: Advance cached branch without force-pushing
+      - name: Advance cosmic-cache without force-pushing
         run: python3 -m cosmic.ci publish

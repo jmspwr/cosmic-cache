@@ -38,11 +38,11 @@ def client_digest() -> str:
 
 
 def published() -> dict:
-    return shared.published("plasma-cached", "plasma")
+    return shared.published("plasma-cache", "plasma")
 
 
 def publish() -> None:
-    shared.publish("plasma-cached")
+    shared.publish("plasma-cache")
 
 
 def github_json(url: str) -> dict:
