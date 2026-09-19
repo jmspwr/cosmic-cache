@@ -13,13 +13,13 @@ not upload an entire NixOS system, personal configuration, proprietary apps, aut
 build secrets. The per-cache Cachix write token is available only to upload/retention steps, not desktop
 compilation. There are no pull-request-triggered privileged builds. The workflow polls component HEADs
 hourly and rebuilds only when a component moved or the client definition (`default.nix`, `packages.nix`,
-the workflow, `scripts/ci.py`) changed; the `cached` branch is bound to the exact client definition that
+the workflow, `cosmic/ci.py`, `scripts/cache.py`) changed; the `cosmic-cache` branch is bound to the exact client definition that
 was verified.
 
 A fresh final runner must obtain every selected output with local compilation disabled and no remote
 builders. The primary COSMIC derivations must not set `preferLocalBuild`. A NixOS module evaluation then
 checks that the module selects identical output paths. Only after these checks and Cachix retention
-succeed is the `cached` branch advanced. This verifies substitution at that moment, not GUI correctness
+succeed is the `cosmic-cache` branch advanced. This verifies substitution at that moment, not GUI correctness
 on a particular laptop or permanent future availability of the provider.
 
 The consumer module checks selected outputs against the published `cache-proof.json`. Network errors
@@ -34,10 +34,10 @@ declarations remain in the user's configuration.
 
 ## Activation
 
-Add this to the existing imports only after the `cached` branch has a successful publication:
+Add this to the existing imports only after the `cosmic-cache` branch has a successful publication:
 
 ```nix
-"${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cached.tar.gz"}/default.nix"
+"${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cosmic-cache.tar.gz"}/cosmic/default.nix"
 ```
 
 The module persistently configures `https://jmspwr.cachix.org` and its public signing key for subsequent
@@ -51,8 +51,8 @@ builders disabled:
 ```sh
 sudo nix-build --expr '
 let
-  c = fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cached.tar.gz";
-in builtins.map (p: p.out) (builtins.attrValues (import (c + "/packages.nix")))
+  c = fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cosmic-cache.tar.gz";
+in builtins.map (p: p.out) (builtins.attrValues (import (c + "/cosmic/packages.nix")))
 ' \
   --no-out-link \
   --max-jobs 0 \
@@ -80,7 +80,7 @@ sudo nixos-rebuild switch --impure \
 After that switch, the module's persistent `nix.settings` makes the `jmspwr` cache available normally.
 Do not enable the source-only `amozeo/nixos-cosmic` import as well.
 
-The `cached` branch rolls only after completed cache verification. `snapshot.json` records the exact
+The `cosmic-cache` branch rolls only after completed cache verification. `snapshot.json` records the exact
 source revision that was built; the matching dependency lock is retained. This is build provenance, not
 a user-managed freeze of the moving cached channel.
 

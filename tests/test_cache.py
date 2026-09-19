@@ -11,7 +11,7 @@ class PublicationTests(unittest.TestCase):
     def test_network_error_is_not_treated_as_unpublished(self):
         with patch.object(ci, 'run', side_effect=subprocess.CalledProcessError(1, 'git')):
             with self.assertRaises(subprocess.CalledProcessError):
-                ci.published("cached", "cosmic")
+                ci.published("cosmic-cache", "cosmic")
 
     def test_publish_first_snapshot_and_fast_forward_with_ignored_files(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -26,16 +26,16 @@ class PublicationTests(unittest.TestCase):
                 ci.run('git', 'add', '.gitignore')
                 ci.run('git', 'commit', '-m', 'Initial')
                 ci.run('git', 'push', 'origin', 'HEAD:main')
-                self.assertEqual(ci.published("cached", "cosmic"), {})
+                self.assertEqual(ci.published("cosmic-cache", "cosmic"), {})
                 ci.dump('snapshot.json', {'revision': 'a' * 40})
                 ci.dump('cache-proof.json', {'revision': 'a' * 40})
-                ci.publish("cached")
-                first = ci.run('git', 'ls-remote', 'origin', 'refs/heads/cached').split()[0]
-                self.assertEqual(ci.published("cached", "cosmic")['revision'], 'a' * 40)
+                ci.publish("cosmic-cache")
+                first = ci.run('git', 'ls-remote', 'origin', 'refs/heads/cosmic-cache').split()[0]
+                self.assertEqual(ci.published("cosmic-cache", "cosmic")['revision'], 'a' * 40)
                 ci.dump('snapshot.json', {'revision': 'b' * 40})
                 ci.dump('cache-proof.json', {'revision': 'b' * 40})
-                ci.publish("cached")
-                self.assertEqual(ci.published("cached", "cosmic")['revision'], 'b' * 40)
+                ci.publish("cosmic-cache")
+                self.assertEqual(ci.published("cosmic-cache", "cosmic")['revision'], 'b' * 40)
                 self.assertIn('parent ' + first, ci.run('git', 'cat-file', '-p', 'FETCH_HEAD'))
                 self.assertIn('snapshot.json', ci.run('git', 'ls-tree', '--name-only', 'FETCH_HEAD'))
 
@@ -54,7 +54,7 @@ class PublicationTests(unittest.TestCase):
                     Path(desktop, 'default.nix').write_text('{}')
                 ci.run('git', 'add', '.')
                 ci.run('git', 'commit', '-m', 'Initial')
-                for desktop, branch in [('cosmic', 'cached'), ('plasma', 'plasma-cached')]:
+                for desktop, branch in [('cosmic', 'cosmic-cache'), ('plasma', 'plasma-cache')]:
                     ci.run('git', 'reset', '--mixed', 'HEAD')
                     with contextlib.chdir(desktop):
                         ci.dump('snapshot.json', {'desktop': desktop})

@@ -39,11 +39,11 @@ def client_digest() -> str:
 
 
 def published() -> dict:
-    return shared.published("cached", "cosmic")
+    return shared.published("cosmic-cache", "cosmic")
 
 
 def publish() -> None:
-    shared.publish("cached")
+    shared.publish("cosmic-cache")
 
 
 def snapshot(revision: str) -> None:

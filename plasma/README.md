@@ -20,11 +20,11 @@ Builds current Plasma Git sources for x86_64-linux and publishes verified binari
 4. On a fresh runner, download **every output of every required Plasma package**, with local and
    remote compilation disabled. Check NixOS assertions and the module's exact selected output paths.
 5. Protect those outputs and their runtime closures with a Cachix retention root, keeping two
-   revisions. Then advance `plasma-cached` with a normal fast-forward commit containing the source snapshot,
+   revisions. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
    client code and `cache-proof.json`.
 
 Unchanged component heads, packaging and builder code skip evaluation and builds. Interrupted or
-failed runs leave `plasma-cached` unchanged. A new push queues behind a running build instead of cancelling
+failed runs leave `plasma-cache` unchanged. A new push queues behind a running build instead of cancelling
 its uploads. Git failures are reported, not treated as an empty cache. There is no silent fallback
 from Git to release sources: choose `beta` explicitly if the development tree needs newer packaging.
 
@@ -38,7 +38,7 @@ proves substitution and package identity, not that the desktop works on every ma
 After the first successful publication, add this to your existing NixOS configuration:
 
 ```nix
-imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cached.tar.gz"}/plasma/default.nix" ];
+imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cache.tar.gz"}/plasma/default.nix" ];
 ```
 
 Keep `services.desktopManager.plasma6.enable = true` in your configuration. The module supplies a
@@ -56,7 +56,7 @@ sudo nixos-rebuild switch --impure \
   --option narinfo-cache-negative-ttl 0
 ```
 
-`plasma-cached` is a rolling channel of completed builds. Recorded revisions make each publication
+`plasma-cache` is a rolling channel of completed builds. Recorded revisions make each publication
 reproducible; they do not require you to manage pins. Nix caches mutable tarball URLs, so a rebuild
 may reuse a recently fetched channel until its tarball TTL expires.
 

@@ -5,8 +5,8 @@ Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, publish
 
 | Desktop | Sources | Verified branch | Module |
 | --- | --- | --- | --- |
-| COSMIC | Component Git HEADs through `amozeo/nixos-cosmic` | `cached` | `cosmic/default.nix` |
-| Plasma | Component Git HEADs on KDE Invent, using Nixpkgs recipes | `plasma-cached` | `plasma/default.nix` |
+| COSMIC | Component Git HEADs through `amozeo/nixos-cosmic` | `cosmic-cache` | `cosmic/default.nix` |
+| Plasma | Component Git HEADs on KDE Invent, using Nixpkgs recipes | `plasma-cache` | `plasma/default.nix` |
 
 Each workflow polls hourly, builds only changed snapshots, and advances its own verified branch
 only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
@@ -19,17 +19,17 @@ Use the module for your desktop after its first successful publication:
 
 ```nix
 # COSMIC
-imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cached.tar.gz"}/cosmic/default.nix" ];
+imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cosmic-cache.tar.gz"}/cosmic/default.nix" ];
 ```
 
 ```nix
 # Plasma
-imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cached.tar.gz"}/plasma/default.nix" ];
+imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cache.tar.gz"}/plasma/default.nix" ];
 ```
 
 Keep your desktop's `services.desktopManager` declaration in your own configuration. The modules
 supply the verified packages and public cache settings. Root `default.nix` and `packages.nix`
-remain COSMIC compatibility entry points; existing COSMIC imports keep working across the rename.
+remain COSMIC compatibility entry points. Update older COSMIC URLs from `cached` to `cosmic-cache`.
 
 For the first rebuild, make the cache available to the current Nix daemon explicitly:
 
