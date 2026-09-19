@@ -8,7 +8,11 @@ Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, publish
 | COSMIC | Component Git HEADs through `amozeo/nixos-cosmic` | `cosmic-cache` | `cosmic/default.nix` |
 | Plasma | Component Git HEADs on KDE Invent, using Nixpkgs recipes | `plasma-cache` | `plasma/default.nix` |
 
-Each workflow polls hourly, builds only changed snapshots, and advances its own verified branch
+**Automatic builds are temporarily paused while the Cachix storage budget is reviewed.**
+Pushes cancel active builds and do not upload packages; hourly schedules are disabled. Explicit
+manual dispatch remains available when there is room to resume. Completed cache entries are kept.
+
+Each workflow builds only changed snapshots and advances its own verified branch
 only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
 evaluation checks the module's assertions and exact package paths. Cachix retention protects the
 latest publication for each desktop. A failure in one desktop does not hold back the other.

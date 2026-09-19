@@ -1,18 +1,22 @@
 name: Build and verify COSMIC cache
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '7 * * * *'
   push:
     branches: [main]
 permissions:
   contents: read
 concurrency:
   group: cosmic-cache
-  cancel-in-progress: false
+  # While paused, pushes stop active builds; explicit manual runs remain serialized.
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 jobs:
+  paused:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo 'Automatic uploads are paused to protect the Cachix storage budget.'
   prepare:
-    if: github.event.repository.visibility == 'public'
+    if: github.event.repository.visibility == 'public' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
