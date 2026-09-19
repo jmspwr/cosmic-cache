@@ -5,7 +5,6 @@ import argparse
 import base64
 from concurrent.futures import ThreadPoolExecutor
 import datetime
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -16,59 +15,35 @@ import tempfile
 import urllib.error
 import urllib.request
 
+from scripts import cache as shared
+from scripts.cache import cache, dump, options, run
+
 PACKAGING_GIT = "https://github.com/amozeo/nixos-cosmic.git"
 SOURCE_BRANCH = "source"
-SOURCE_REPO = os.environ.get("GITHUB_REPOSITORY", "jmspwr/cosmic-cache")
+SOURCE_REPO = os.environ.get("GITHUB_REPOSITORY", "jmspwr/desktop-cache")
 CLIENT_FILES = [
-    ".github/workflows/cache.yml",
+    ".github/workflows/cosmic.yml",
     "cache.json",
+    "cosmic/ci.py",
+    "cosmic/default.nix",
+    "cosmic/packages.nix",
+    "cosmic/retention-root.nix",
     "default.nix",
     "packages.nix",
-    "retention-root.nix",
-    "scripts/ci.py",
+    "scripts/cache.py",
 ]
 
 
-def run(*args: str, capture: bool = True, cwd: str | Path | None = None,
-        env: dict[str, str] | None = None) -> str:
-    result = subprocess.run(
-        args,
-        check=True,
-        text=True,
-        cwd=cwd,
-        env=env,
-        stdout=subprocess.PIPE if capture else None,
-    )
-    return result.stdout.strip() if capture else ""
+def client_digest() -> str:
+    return shared.client_digest(CLIENT_FILES)
 
 
-def dump(path: str | Path, value: object) -> None:
-    Path(path).write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+def published() -> dict:
+    return shared.published("cached", "cosmic")
 
 
-def cache() -> dict:
-    value = json.loads(Path("cache.json").read_text())
-    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,49}", value["name"]):
-        raise ValueError("Invalid cache name")
-    if value["uri"].rstrip("/") != f'https://{value["name"]}.cachix.org':
-        raise ValueError("Unexpected Cachix URL")
-    keys = value.get("publicSigningKeys", [])
-    if not keys or not all(
-        isinstance(k, str) and k.startswith(value["name"] + ".cachix.org-")
-        for k in keys
-    ):
-        raise ValueError("Missing/invalid cache public signing keys")
-    return value
-
-
-def options() -> list[str]:
-    c = cache()
-    return [
-        "--option", "extra-substituters", c["uri"],
-        "--option", "extra-trusted-public-keys", " ".join(c["publicSigningKeys"]),
-        "--option", "narinfo-cache-negative-ttl", "0",
-        "--option", "fallback", "false",
-    ]
+def publish() -> None:
+    shared.publish("cached")
 
 
 def snapshot(revision: str) -> None:
@@ -102,11 +77,11 @@ def component_sources(root: str | Path) -> dict[str, dict[str, str]]:
             continue
         package_file = package_dir / "package.nix"
         if not package_file.is_file():
-            continue
+            raise RuntimeError(f"Missing package recipe for {package_dir.name}")
         text = package_file.read_text()
         block = re.search(r"\bsrc\s*=\s*fetchFromGitHub\s*\{(.*?)\n\s*\};", text, re.S)
         if block is None:
-            continue
+            raise RuntimeError(f"Cannot track primary GitHub source for {package_dir.name}")
         body = block.group(1)
         owner = re.search(r'\bowner\s*=\s*"([^"]+)"\s*;', body)
         repo = re.search(r'\brepo\s*=\s*"([^"]+)"\s*;', body)
@@ -165,21 +140,6 @@ def source_metadata(revision: str) -> dict | None:
         if exc.code == 404:
             return None
         raise
-
-
-def client_digest() -> str:
-    digest = hashlib.sha256()
-    for path in CLIENT_FILES:
-        digest.update(path.encode() + b"\0" + Path(path).read_bytes() + b"\0")
-    return digest.hexdigest()
-
-
-def published() -> dict:
-    try:
-        run("git", "fetch", "--no-tags", "--depth", "1", "origin", "refs/heads/cached", capture=False)
-    except subprocess.CalledProcessError:
-        return {}
-    return json.loads(run("git", "show", "FETCH_HEAD:cache-proof.json"))
 
 
 def github_push_env(token: str) -> dict[str, str]:
@@ -302,22 +262,22 @@ def package_info() -> dict:
 def resolve() -> None:
     cache()
     revision, source_changed = refresh_source()
-    snapshot(revision)
-    names = sorted(package_info())
-    required = {
-        "cosmic-comp", "cosmic-session", "cosmic-greeter",
-        "cosmic-panel", "cosmic-settings", "xdg-desktop-portal-cosmic",
-    }
-    if not required <= set(names):
-        raise RuntimeError("Source snapshot is missing required COSMIC packages")
-    if not names or len(names) > 100:
-        raise RuntimeError("Unexpected package matrix size")
-
     proof = published()
     build_needed = (
         proof.get("revision") != revision
         or proof.get("clientDigest") != client_digest()
     )
+    names = []
+    if build_needed:
+        snapshot(revision)
+        names = sorted(package_info())
+        required = {
+            "cosmic-comp", "cosmic-session", "cosmic-greeter",
+            "cosmic-panel", "cosmic-settings", "xdg-desktop-portal-cosmic",
+        }
+        if not required <= set(names) or len(names) > 100:
+            raise RuntimeError("Unexpected COSMIC package set")
+
     with open(os.environ["GITHUB_OUTPUT"], "a") as out:
         out.write("revision=" + revision + "\n")
         out.write("matrix=" + json.dumps(names, separators=(",", ":")) + "\n")
@@ -368,26 +328,6 @@ def verify(revision: str) -> None:
         "--option", "builders", "", *options(), capture=False,
     )
 
-    expression = (
-        'let '
-        's = builtins.fromJSON (builtins.readFile ./snapshot.json); '
-        'u = builtins.getFlake s.url; '
-        'n = u.inputs.nixpkgs.lib.nixosSystem { '
-        'system = "x86_64-linux"; '
-        'modules = [ ./default.nix ({ ... }: { '
-        'boot.isContainer = true; '
-        'services.desktopManager.cosmic.enable = true; '
-        'services.displayManager.cosmic-greeter.enable = true; '
-        'system.stateVersion = "25.11"; '
-        '}) ]; '
-        '}; '
-        'p = import ./packages.nix; '
-        'in builtins.all (name: n.pkgs.${name}.outPath == p.${name}.outPath) '
-        '(builtins.attrNames p)'
-    )
-    if run("nix", "eval", "--impure", "--json", "--expr", expression) != "true":
-        raise RuntimeError("NixOS integration changed the cached package outputs")
-
     dump(
         "cache-proof.json",
         {
@@ -403,6 +343,31 @@ def verify(revision: str) -> None:
             "packages": info,
         },
     )
+    expression = (
+        'let '
+        's = builtins.fromJSON (builtins.readFile ./snapshot.json); '
+        'u = builtins.getFlake s.url; '
+        'n = u.inputs.nixpkgs.lib.nixosSystem { '
+        'system = "x86_64-linux"; '
+        'modules = [ ./default.nix ({ ... }: { '
+        'boot.isContainer = true; '
+        'services.desktopManager.cosmic.enable = true; '
+        'services.displayManager.cosmic-greeter.enable = true; '
+        'system.stateVersion = "25.11"; '
+        '}) ]; '
+        '}; '
+        'p = import ./packages.nix; '
+        'in builtins.all (a: a.assertion) n.config.assertions && '
+        'builtins.all (name: n.pkgs.${name}.outPath == p.${name}.outPath) '
+        '(builtins.attrNames p)'
+    )
+    try:
+        if run("nix", "eval", "--impure", "--json", "--expr", expression) != "true":
+            raise RuntimeError("NixOS integration assertions or output identity failed")
+    except Exception:
+        Path("cache-proof.json").unlink()
+        raise
+
     print("Cached package outputs and module-output identity verified")
 
 
@@ -414,30 +379,6 @@ def retain() -> None:
         "nix", "run", "nixpkgs#cachix", "--", "pin", c,
         "cosmic-x86_64-linux", root, "--keep-revisions", "2", capture=False,
     )
-
-
-def publish() -> None:
-    for path in ("snapshot.json", "cache-proof.json"):
-        if not Path(path).is_file():
-            raise RuntimeError(f"Missing publication evidence: {path}")
-    remote = run("git", "ls-remote", "--heads", "origin", "refs/heads/cached")
-    parent = run("git", "rev-parse", "HEAD")
-    if remote:
-        run("git", "fetch", "--no-tags", "origin", "refs/heads/cached", capture=False)
-        parent = run("git", "rev-parse", "FETCH_HEAD")
-    run("git", "config", "user.name", "github-actions[bot]")
-    run(
-        "git", "config", "user.email",
-        "41898282+github-actions[bot]@users.noreply.github.com",
-    )
-    run("git", "add", "snapshot.json", "cache-proof.json")
-    tree = run("git", "write-tree")
-    sha = run(
-        "git", "commit-tree", tree, "-p", parent,
-        "-m", "Publish verified COSMIC cache snapshot",
-    )
-    run("git", "push", "origin", sha + ":refs/heads/cached", capture=False)
-    print("Published cached branch: " + sha)
 
 
 def main() -> None:
@@ -461,9 +402,10 @@ def main() -> None:
 
 if __name__ == "__main__":
     try:
+        os.chdir(Path(__file__).resolve().parent)
         main()
     except (
-        subprocess.CalledProcessError,
+        subprocess.SubprocessError,
         ValueError,
         RuntimeError,
         KeyError,
