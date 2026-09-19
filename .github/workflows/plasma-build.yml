@@ -1,0 +1,48 @@
+name: Build a wave of Plasma packages
+on:
+  workflow_call:
+    inputs:
+      revision:
+        required: true
+        type: string
+      packages:
+        description: JSON array of independent package batches, one runner each
+        required: true
+        type: string
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: true
+jobs:
+  package:
+    if: inputs.packages != '[]'
+    name: ${{ join(matrix.packages, ', ') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        packages: ${{ fromJSON(inputs.packages) }}
+    env:
+      SOURCE_REV: ${{ inputs.revision }}
+      PACKAGES: ${{ toJSON(matrix.packages) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: snapshot
+          path: plasma
+      - name: Free runner disk
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            max-jobs = 1
+      - name: Build all batch outputs using earlier uploads
+        run: python3 -m plasma.ci build
+      - name: Upload the batch and its runtime closures
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 -m plasma.ci push

@@ -1,70 +1,37 @@
-# COSMIC binary cache builder
+# Desktop cache
 
-Public x86_64 COSMIC Git cache builder for `jmspwr`.
+Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, published to
+[jmspwr.cachix.org](https://jmspwr.cachix.org).
 
-This is a dedicated public builder repository, not a copy of a personal NixOS configuration.
-It follows COSMIC component HEADs through the packaging/update machinery in `amozeo/nixos-cosmic`.
+| Desktop | Sources | Verified branch | Module |
+| --- | --- | --- | --- |
+| COSMIC | Component Git HEADs through `amozeo/nixos-cosmic` | `cached` | `cosmic/default.nix` |
+| Plasma | Component Git HEADs on KDE Invent, using Nixpkgs recipes | `plasma-cached` | `plasma/default.nix` |
 
-## Architecture
+Each workflow polls hourly, builds only changed snapshots, and advances its own verified branch
+only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
+evaluation checks the module's assertions and exact package paths. Cachix retention protects the
+latest two publications for each desktop. A failure in one desktop does not hold back the other.
 
-GitHub Actions resolves one source snapshot, builds the x86_64 COSMIC desktop packages on separate
-standard Linux runners, and uploads their runtime closures to the public `jmspwr` Cachix cache. It does
-not upload an entire NixOS system, personal configuration, proprietary apps, authentication files or
-build secrets. The per-cache Cachix write token is available only to upload/retention steps, not desktop
-compilation. There are no pull-request-triggered privileged builds. The workflow polls component HEADs
-hourly and rebuilds only when a component moved or the client definition (`default.nix`, `packages.nix`,
-the workflow, `scripts/ci.py`) changed; the `cached` branch is bound to the exact client definition that
-was verified.
+## Install
 
-A fresh final runner must obtain every selected output with local compilation disabled and no remote
-builders. The primary COSMIC derivations must not set `preferLocalBuild`. A NixOS module evaluation then
-checks that the module selects identical output paths. Only after these checks and Cachix retention
-succeed is the `cached` branch advanced. This verifies substitution at that moment, not GUI correctness
-on a particular laptop or permanent future availability of the provider.
-
-The module imports matching NixOS integration modules from the source snapshot and supplies its
-already-instantiated package outputs. It does not rebuild that package set against the user's channel.
-This adds a separate Nixpkgs dependency set for COSMIC, not a replacement for the whole system's channel.
-The existing `services.desktopManager.cosmic.enable` and `services.displayManager.cosmic-greeter.enable`
-declarations remain in the user's configuration.
-
-## Activation
-
-Add this to the existing imports only after the `cached` branch has a successful publication:
+Use the module for your desktop after its first successful publication:
 
 ```nix
-"${fetchTarball "https://github.com/jmspwr/cosmic-cache/archive/cached.tar.gz"}/default.nix"
+# COSMIC
+imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cached.tar.gz"}/cosmic/default.nix" ];
 ```
 
-The module persistently configures `https://jmspwr.cachix.org` and its public signing key for subsequent
-Nix invocations. There is one bootstrap detail: settings produced by a NixOS configuration do not become
-the running nix-daemon configuration until that configuration has been activated. Therefore the first
-preflight/rebuild must provide the Cachix URL and key to the current Nix process explicitly.
-
-First, strictly prove that every selected COSMIC output can be substituted, with all local and remote
-builders disabled:
-
-```sh
-sudo nix-build --expr '
-let
-  c = fetchTarball "https://github.com/jmspwr/cosmic-cache/archive/cached.tar.gz";
-in builtins.map (p: p.out) (builtins.attrValues (import (c + "/packages.nix")))
-' \
-  --no-out-link \
-  --max-jobs 0 \
-  --option builders "" \
-  --option extra-substituters https://jmspwr.cachix.org \
-  --option extra-trusted-public-keys 'jmspwr.cachix.org-1:Ta+OFK/CrEpoz6PfkAuz2le3tZoTyFKshQpTwm5iccw=' \
-  --option narinfo-cache-negative-ttl 0 \
-  --option fallback false
+```nix
+# Plasma
+imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cached.tar.gz"}/plasma/default.nix" ];
 ```
 
-A successful command means the evaluated COSMIC package outputs required no compilation. If it reports
-`Cannot build` for a COSMIC derivation, abort activation and fix the cache rather than enabling builders.
+Keep your desktop's `services.desktopManager` declaration in your own configuration. The modules
+supply the verified packages and public cache settings. Root `default.nix` and `packages.nix`
+remain COSMIC compatibility entry points; existing COSMIC imports keep working across the rename.
 
-Then perform the first system rebuild with the same bootstrap cache settings, but do **not** set
-`max-jobs = 0` for the complete NixOS build. NixOS must still create ordinary machine-specific system
-assembly derivations locally:
+For the first rebuild, make the cache available to the current Nix daemon explicitly:
 
 ```sh
 sudo nixos-rebuild switch --impure \
@@ -73,42 +40,38 @@ sudo nixos-rebuild switch --impure \
   --option narinfo-cache-negative-ttl 0
 ```
 
-After that switch, the module's persistent `nix.settings` makes the `jmspwr` cache available normally.
-Do not enable the source-only `amozeo/nixos-cosmic` import as well.
+After activation, the module supplies these settings. Each desktop uses its recorded dependency
+set alongside your system's own Nixpkgs. Local system assembly still happens normally; the cache
+guarantee applies to the verified desktop outputs, not every package on your machine. Nix may reuse
+a recently fetched channel tarball until its TTL expires.
 
-The `cached` branch rolls only after completed cache verification. `snapshot.json` records the exact
-source revision that was built; the matching dependency lock is retained. This is build provenance, not
-a user-managed freeze of the moving cached channel.
+## Build design
 
-## Known upstream workaround
+- [`cosmic/`](cosmic): follows all tracked component heads using upstream's packaging updater,
+  builds independent applications on separate runners, and retains their runtime closures.
+- [`plasma/`](plasma): resolves exact KDE Invent commits and hashes, overrides the complete KDE
+  package scope's sources, and groups actual Plasma dependencies into five parallel build waves.
+  Every output of every required Plasma package is uploaded, verified and retained, including
+  headers and session files. Manual `beta` mode uses the packaging tree's release tarballs.
+- [`scripts/cache.py`](scripts/cache.py): shared cache configuration, digest, transport and
+  fast-forward publication. Network errors never masquerade as an unpublished cache.
 
-`cosmic-comp` depends on the `libdisplay-info-sys` 0.3 crate, which binds the 0.3 C API, while
-`amozeo/nixos-cosmic` builds it against Nixpkgs' default `libdisplay-info` (0.4.0 at the time of writing),
-so upstream's own build fails. `packages.nix` overrides `cosmic-comp` with `libdisplay-info_0_3` — the same
-choice Nixpkgs' own `cosmic-comp` recipe makes — for as long as the upstream recipe takes a `libdisplay-info`
-argument. The override switches itself off when upstream changes that argument; the proper fix is upstream.
+New pushes queue behind active builds so they cannot cancel uploads or retention midway through.
+Published snapshots record exact commits for reproducibility while the channels keep rolling.
+Git source changes can require updated packaging or patches; failed builds preserve the previous
+publication. No failed Git build silently publishes a beta instead.
 
-## Resource and spending limits
+Only standard public GitHub runners are used. Desktop compilation has no Cachix write token;
+only upload and retention steps receive it. Pull requests run checks without cache credentials.
+No personal NixOS configurations, whole systems, proprietary apps or secrets are uploaded.
 
-Only standard `ubuntu-24.04` GitHub-hosted runners are selected, and the workflow is gated to public
-repositories. No paid runner, subscription, trial or billing change is created.
+## Development
 
-Only runtime closures are pushed. A named Cachix retention root protects completed snapshots. Older
-remote cache entries may become eligible for Cachix's own storage management. This does not delete local
-files, NixOS generations or local Nix store entries. No local garbage-collection, pruning or deletion
-commands are included.
+```sh
+python3 -m unittest discover -s tests -v
+for file in *.nix cosmic/*.nix plasma/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
+actionlint
+```
 
-## Security
-
-The Cachix write token is stored only as a GitHub Actions secret. It must never be committed, pasted into
-issues, logs or chat, or placed in a NixOS configuration. Client machines need only the public cache URL
-and public signing key above.
-
-## Primary references
-
-- https://docs.cachix.org/getting-started
-- https://docs.cachix.org/continuous-integration-setup/github-actions
-- https://docs.cachix.org/pushing
-- https://docs.cachix.org/pins
-- https://nix.dev/manual/nix/stable/command-ref/conf-file
-- https://github.com/amozeo/nixos-cosmic
+Run builders from the repository root with `python3 -m cosmic.ci` or `python3 -m plasma.ci`.
+The generated snapshot and verification files belong to the publication branches, not `main`.
