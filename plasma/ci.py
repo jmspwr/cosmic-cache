@@ -200,6 +200,38 @@ def git_sources(heads: dict[str, dict], previous: dict, value: dict) -> dict:
         return dict(pool.map(fetch, sorted(heads.items())))
 
 
+def write_matrix(revision: str, stages: list, build_needed: bool) -> None:
+    with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+        out.write("revision=" + revision + "\n")
+        for i, groups in enumerate(stages):
+            out.write(f"l{i}=" + json.dumps(groups, separators=(",", ":")) + "\n")
+        out.write("build=" + ("true" if build_needed else "false") + "\n")
+
+
+def resume() -> None:
+    """Reuse an interrupted run's immutable snapshot, never refresh its Git heads."""
+    cache()
+    value = json.loads(Path("snapshot.json").read_text())
+    revision = value["revision"]
+    if not re.fullmatch(r"[0-9a-f]{40}", revision) or value["url"] != tarball(revision):
+        raise ValueError("Invalid checkpoint packaging revision")
+    mode = value["mode"]
+    sources = value.get("gitSources", {})
+    if mode not in ("git", "beta") or (mode == "git" and set(sources) != set(value["projects"])):
+        raise ValueError("Incomplete checkpoint sources")
+    heads = {name: {key: source[key] for key in ("revision", "url")}
+             for name, source in sources.items()}
+    digest = hashlib.sha256(json.dumps(heads, sort_keys=True).encode()).hexdigest()
+    if digest != value["sourceDigest"]:
+        raise ValueError("Checkpoint source digest does not match")
+    stages = levels(value)
+    if len(value["needed"]) > 120:
+        raise RuntimeError("Unexpected checkpoint package matrix size")
+    dump("snapshot.json", value)
+    write_matrix(revision, stages, True)
+    print(f"Resuming immutable Plasma {mode} snapshot {digest}: {len(value['needed'])} packages")
+
+
 def resolve() -> None:
     cache()
     proof = published()
@@ -231,11 +263,7 @@ def resolve() -> None:
             raise RuntimeError("Unexpected package matrix size")
         dump("snapshot.json", value)
         print(f"Plasma {mode} at nixpkgs {revision}: batches {[len(s) for s in stages]}")
-    with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-        out.write("revision=" + revision + "\n")
-        for i, groups in enumerate(stages):
-            out.write(f"l{i}=" + json.dumps(groups, separators=(",", ":")) + "\n")
-        out.write("build=" + ("true" if build_needed else "false") + "\n")
+    write_matrix(revision, stages, build_needed)
     print(f"Build needed: {build_needed}")
 
 
@@ -328,12 +356,13 @@ def retain() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["resolve", "build", "push", "verify", "retain", "publish"])
+    parser.add_argument("command", choices=["resolve", "resume", "build", "push", "verify", "retain", "publish"])
     parser.add_argument("--revision", default=os.environ.get("SOURCE_REV", ""))
     parser.add_argument("--packages", default=os.environ.get("PACKAGES", "[]"))
     args = parser.parse_args()
     {
         "resolve": resolve,
+        "resume": resume,
         "build": lambda: build(json.loads(args.packages), args.revision),
         "push": push,
         "verify": lambda: verify(args.revision),

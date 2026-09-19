@@ -66,6 +66,30 @@ class SchedulingTests(unittest.TestCase):
 
 
 class PipelineTests(unittest.TestCase):
+    def test_resume_preserves_sources_without_polling_new_heads(self):
+        revision = 'a' * 40
+        heads = {'kwin': {'revision': 'b' * 40, 'url': 'https://example.invalid/source'}}
+        value = {'revision': revision, 'url': ci.tarball(revision), 'mode': 'git',
+                 'projects': {'kwin': 'plasma/kwin'}, 'needed': ['kwin'],
+                 'gitSources': {'kwin': {**heads['kwin'], 'sha256': 'saved-hash'}},
+                 'sourceDigest': ci.hashlib.sha256(json.dumps(heads, sort_keys=True).encode()).hexdigest()}
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            Path('snapshot.json').write_text(json.dumps(value))
+            with patch.dict(os.environ, GITHUB_OUTPUT=str(Path(directory, 'output'))), \
+                 patch.object(ci, 'cache'), patch.object(ci, 'levels', return_value=[[['kwin']], [], [], [], []]), \
+                 patch.object(ci, 'git_heads') as heads_call, patch.object(ci, 'source_revision') as revision_call:
+                ci.resume()
+            heads_call.assert_not_called()
+            revision_call.assert_not_called()
+            self.assertEqual(json.loads(Path('snapshot.json').read_text()), value)
+            self.assertIn('build=true', Path('output').read_text())
+            value['sourceDigest'] = 'wrong'
+            Path('snapshot.json').write_text(json.dumps(value))
+            with patch.object(ci, 'cache'), patch.object(ci, 'levels') as levels:
+                with self.assertRaisesRegex(ValueError, 'digest'):
+                    ci.resume()
+                levels.assert_not_called()
+
     def test_unchanged_snapshot_skips_nix_evaluation(self):
         proof = {'revision': 'a' * 40, 'clientDigest': 'same', 'mode': 'beta',
                  'sourceDigest': ci.hashlib.sha256(b'{}').hexdigest(),

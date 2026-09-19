@@ -2,6 +2,9 @@ name: Build and verify Plasma cache
 on:
   workflow_dispatch:
     inputs:
+      resume_run:
+        description: Previous run whose exact snapshot should be resumed (optional)
+        required: false
       rev:
         description: nixpkgs packaging commit (Plasma Git heads are resolved separately)
         required: false
@@ -16,18 +19,15 @@ permissions:
   contents: read
 concurrency:
   group: plasma-cache
-  # While paused, pushes stop active builds; explicit manual runs remain serialized.
-  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+  cancel-in-progress: false
 jobs:
-  paused:
-    if: github.event_name != 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    steps:
-      - run: echo 'Automatic uploads are paused to protect the Cachix storage budget.'
   prepare:
-    if: github.event.repository.visibility == 'public' && github.event_name == 'workflow_dispatch'
+    if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    permissions:
+      actions: read
+      contents: read
     outputs:
       revision: ${{ steps.resolve.outputs.revision }}
       build: ${{ steps.resolve.outputs.build }}
@@ -44,12 +44,19 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+      # Recover the interrupted snapshot once; remove the fallback after publication.
+      - uses: actions/download-artifact@v4
+        with:
+          name: snapshot
+          path: plasma
+          run-id: ${{ inputs.resume_run || '35467308246' }}
+          github-token: ${{ github.token }}
       - id: resolve
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SOURCE_REV_OVERRIDE: ${{ inputs.rev }}
           SOURCE_MODE: ${{ inputs.mode || 'git' }}
-        run: python3 -m plasma.ci resolve
+        run: python3 -m plasma.ci resume
       - uses: actions/upload-artifact@v4
         if: steps.resolve.outputs.build == 'true'
         with:

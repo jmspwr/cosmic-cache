@@ -8,9 +8,9 @@ Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, publish
 | COSMIC | Component Git HEADs through `amozeo/nixos-cosmic` | `cosmic-cache` | `cosmic/default.nix` |
 | Plasma | Component Git HEADs on KDE Invent, using Nixpkgs recipes | `plasma-cache` | `plasma/default.nix` |
 
-**Automatic builds are temporarily paused while the Cachix storage budget is reviewed.**
-Pushes cancel active builds and do not upload packages; hourly schedules are disabled. Explicit
-manual dispatch remains available when there is room to resume. Completed cache entries are kept.
+**Plasma recovery is in progress from the interrupted run's exact source snapshot.**
+Its reduced upload policy reuses existing outputs and omits debug symbols. Hourly schedules
+remain paused during recovery; COSMIC's published cache remains available.
 
 Each workflow builds only changed snapshots and advances its own verified branch
 only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
