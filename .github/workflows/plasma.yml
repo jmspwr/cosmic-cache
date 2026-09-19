@@ -13,6 +13,8 @@ on:
         type: choice
         options: [git, beta]
         default: git
+  schedule:
+    - cron: '23 * * * *'
   push:
     branches: [main]
 permissions:
@@ -44,19 +46,24 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
-      # Recover the interrupted snapshot once; remove the fallback after publication.
       - uses: actions/download-artifact@v4
+        if: inputs.resume_run != ''
         with:
           name: snapshot
           path: plasma
-          run-id: ${{ inputs.resume_run || '35467308246' }}
+          run-id: ${{ inputs.resume_run }}
           github-token: ${{ github.token }}
       - id: resolve
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SOURCE_REV_OVERRIDE: ${{ inputs.rev }}
           SOURCE_MODE: ${{ inputs.mode || 'git' }}
-        run: python3 -m plasma.ci resume
+        run: |
+          if [ -f plasma/snapshot.json ]; then
+            python3 -m plasma.ci resume
+          else
+            python3 -m plasma.ci resolve
+          fi
       - uses: actions/upload-artifact@v4
         if: steps.resolve.outputs.build == 'true'
         with:
