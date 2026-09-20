@@ -93,10 +93,10 @@ def resolve():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["resolve", "build", "push", "verify", "retain", "publish"])
+    parser.add_argument("command", choices=["resolve", "build", "push", "verify", "retain", "publish", "salvage"])
     args = parser.parse_args()
     os.chdir(Path(__file__).resolve().parent)
-    {"resolve": resolve, "build": lambda: lifecycle.build(digest), "push": lifecycle.push, "verify": lambda: lifecycle.verify(digest), "retain": lambda: lifecycle.retain("gnome"), "publish": lambda: shared.publish("gnome-cache")}[args.command]()
+    {"resolve": resolve, "build": lambda: lifecycle.build(digest), "push": lifecycle.push, "salvage": lifecycle.salvage, "verify": lambda: lifecycle.verify(digest), "retain": lambda: lifecycle.retain("gnome"), "publish": lambda: shared.publish("gnome-cache")}[args.command]()
 
 
 if __name__ == "__main__":

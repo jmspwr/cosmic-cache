@@ -2,6 +2,7 @@
 import datetime
 import json
 import os
+import subprocess
 from pathlib import Path
 import urllib.request
 from scripts import cache as shared
@@ -31,12 +32,12 @@ def integration(revision, sha256):
 
 
 def build(digest):
-    run("nix-build", "packages.nix", "-A", "runtime", "--no-out-link", "--max-jobs", "1", "--cores", "2", *options(), capture=False)
     value = proof(digest)
     dump("cache-proof.json", value)
     host = fetch("https://api.github.com/repos/NixOS/nixpkgs/commits/nixos-unstable")["sha"]
     host_hash = run("nix-prefetch-url", "--unpack", f"https://github.com/NixOS/nixpkgs/archive/{host}.tar.gz")
     result = integration(host, host_hash)
+    run("nix-build", "packages.nix", "-A", "runtime", "--no-out-link", "--max-jobs", "1", "--cores", "2", *options(), capture=False)
     built = run("nix-build", result["systemDerivation"], "--no-out-link", "--max-jobs", "1", "--cores", "2", *options())
     if built != result["systemPath"]:
         raise RuntimeError("Reference system output differs")
@@ -49,6 +50,19 @@ def push():
     systems = json.loads(Path("reference-systems.json").read_text())["systems"]
     paths = info()["runtimePaths"] + [s["systemPath"] for s in systems.values()]
     run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", shared.cache()["name"], *shared.PUSH_OPTIONS, *paths, capture=False)
+
+
+def salvage():
+    """Keep completed runtimes from a failed build, without publishing or pinning."""
+    paths = []
+    for path in info()["runtimePaths"]:
+        try:
+            run("nix-store", "--check-validity", path)
+        except subprocess.CalledProcessError:
+            continue
+        paths.append(path)
+    if paths:
+        run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", shared.cache()["name"], *shared.PUSH_OPTIONS, *paths, capture=False)
 
 
 def verify(digest):

@@ -9,7 +9,13 @@ let
   proof = builtins.fromJSON (builtins.readFile ./cache-proof.json);
   cache = builtins.fromJSON (builtins.readFile ../cache.json);
   modulePkgs = pkgs // {
-    lxqt = packages.scope;
+    lxqt = packages.scope // {
+      # Plasma already installs kscreen-doctor and its plugins. Keep LXQt's
+      # native libkscreen in package closures, without a second global copy.
+      preRequisitePackages = builtins.filter (
+        p: !config.services.desktopManager.plasma6.enable || (p.pname or "") != "libkscreen"
+      ) packages.scope.preRequisitePackages;
+    };
   };
   desktopModule = "services/x11/desktop-managers/lxqt.nix";
   portalModule = "config/xdg/portals/lxqt.nix";
