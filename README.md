@@ -63,8 +63,8 @@ Ordinary applications retain their host channel's package definitions. Assertion
 architecture, stale proof, or competing overlay that changes a cached COSMIC output.
 
 `main` contains the builder. `source` contains immutable upstream packaging snapshots without upstream
-workflows. `cosmic-cache` contains the verified consumer plus `cosmic/snapshot.json` and
-`cosmic/cache-proof.json`. Import the publication branch, never `main` or `source`.
+workflows. `cosmic-cache` contains only consumer files, documentation and verification evidence: `cosmic/snapshot.json` and
+`cosmic/cache-proof.json`. Build workflows are not shipped in that branch. Import the publication branch, never `main` or `source`.
 
 ## Storage and credentials
 

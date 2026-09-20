@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 # Spend runner CPU on compression instead of scarce persistent cache storage.
@@ -72,7 +73,8 @@ def published(branch: str, desktop: str) -> dict:
     return proof
 
 
-def publish(branch: str, env: dict[str, str] | None = None, expected_parent: str | None = None) -> None:
+def publish(branch: str, env: dict[str, str] | None = None, expected_parent: str | None = None,
+            files: list[str] | None = None) -> None:
     for path in ("snapshot.json", "cache-proof.json"):
         if not Path(path).is_file():
             raise RuntimeError(f"Missing publication evidence: {path}")
@@ -87,8 +89,16 @@ def publish(branch: str, env: dict[str, str] | None = None, expected_parent: str
         raise RuntimeError("Publication branch changed after retention; retry safely")
     run("git", "config", "user.name", "github-actions[bot]")
     run("git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
-    run("git", "add", "--force", "snapshot.json", "cache-proof.json")
-    tree = run("git", "write-tree")
+    if files is None:
+        run("git", "add", "--force", "snapshot.json", "cache-proof.json")
+        tree = run("git", "write-tree")
+    else:
+        root = run("git", "rev-parse", "--show-toplevel")
+        with tempfile.TemporaryDirectory(prefix="cosmic-index-") as tmp:
+            index_env = {**os.environ, "GIT_INDEX_FILE": str(Path(tmp) / "index")}
+            run("git", "read-tree", "--empty", cwd=root, env=index_env)
+            run("git", "add", "--force", "--", *files, cwd=root, env=index_env)
+            tree = run("git", "write-tree", cwd=root, env=index_env)
     commit = run("git", "commit-tree", tree, "-p", parent, "-m", f"Publish verified {branch} snapshot")
     run("git", "push", "origin", f"{commit}:{ref}", env=env, capture=False)
     print(f"Published {branch}: {commit}")

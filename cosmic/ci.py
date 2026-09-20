@@ -54,7 +54,11 @@ def publish() -> None:
     current = {k: v for k, v in published().items() if k not in {"snapshot", "publicationRevision"}}
     if current != proof:
         shared.publish("cosmic-cache", env=github_push_env(os.environ["GITHUB_TOKEN"]),
-                       expected_parent=proof["publicationParent"])
+                       expected_parent=proof["publicationParent"], files=[
+                           "README.md", "cache.json", "default.nix", "packages.nix",
+                           "cosmic/default.nix", "cosmic/packages.nix",
+                           "cosmic/snapshot.json", "cosmic/cache-proof.json",
+                       ])
     # Keep both snapshots until the advertised branch has advanced successfully.
     pin_root(proof["retentionRoot"])
 

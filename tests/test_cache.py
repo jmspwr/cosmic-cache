@@ -53,6 +53,7 @@ class PublicationTests(unittest.TestCase):
                 ci.run('git', 'config', 'user.name', 'Test')
                 ci.run('git', 'config', 'user.email', 'test@example.invalid')
                 Path('.gitignore').write_text('snapshot.json\ncache-proof.json\n')
+                Path('builder.py').write_text('build-only code')
                 for desktop in ['cosmic']:
                     Path(desktop).mkdir()
                     Path(desktop, 'default.nix').write_text('{}')
@@ -63,7 +64,11 @@ class PublicationTests(unittest.TestCase):
                     with contextlib.chdir(desktop):
                         ci.dump('snapshot.json', {'desktop': desktop})
                         ci.dump('cache-proof.json', {'desktop': desktop})
-                        ci.publish(branch)
+                        ci.publish(branch, files=[f'{desktop}/default.nix', f'{desktop}/snapshot.json', f'{desktop}/cache-proof.json'])
                         proof = ci.published(branch, desktop)
                         self.assertEqual(proof['desktop'], desktop)
                         self.assertEqual(proof['snapshot']['desktop'], desktop)
+                        files = ci.run('git', 'ls-tree', '-r', '--name-only', 'FETCH_HEAD').splitlines()
+                        self.assertNotIn('builder.py', files)
+                        self.assertEqual(len(files), 3)
+                        self.assertEqual(ci.run('git', 'diff', '--cached', '--name-only'), '')
