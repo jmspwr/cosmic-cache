@@ -1,6 +1,6 @@
 {
-  "builderRevision": "389d2927b304ebd36eea49b58db6751734203b9f",
-  "clientDigest": "f46e7e347008253d95fbd589ab00f5a8023cfb9b66c0e1f4694926b768864828",
+  "builderRevision": "410128e272693de62b968315ac36400efd6ba91d",
+  "clientDigest": "29e9c8294deff28d0eaa100010d8487edadfc07f03dd66a7100821a9ac392dc7",
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
@@ -161,5 +161,23 @@
   },
   "revision": "59e95b3e90ce9ccbff86135ff76a6e6e132c59db",
   "schema": 2,
-  "verifiedAt": "2026-09-20T14:12:22.285400+00:00"
+  "storage": {
+    "compressedBytes": 864073745,
+    "desktops": {
+      "cosmic": {
+        "cachePaths": 31,
+        "compressedBytes": 390207513
+      },
+      "plasma": {
+        "cachePaths": 136,
+        "compressedBytes": 473866232
+      }
+    },
+    "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
+    "runtimeBudgetBytes": 4294967296,
+    "schema": 1,
+    "scope": "Published runtime closures, not total account usage or obsolete unpinned data",
+    "updateOverlapBytes": 864073745
+  },
+  "verifiedAt": "2026-09-20T16:00:40.203634+00:00"
 }

@@ -1,0 +1,96 @@
+name: Build and verify LXQt cache
+on:
+  workflow_call:
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: lxqt-cache
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    outputs:
+      build: ${{ steps.resolve.outputs.build }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - id: resolve
+        run: python3 -m lxqt.ci resolve
+      - uses: actions/upload-artifact@v4
+        if: steps.resolve.outputs.build == 'true'
+        with:
+          name: lxqt-snapshot
+          path: lxqt/snapshot.json
+          retention-days: 3
+  build:
+    if: needs.prepare.outputs.build == 'true'
+    needs: prepare
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: lxqt-snapshot
+          path: lxqt
+      - name: Free runner disk
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            max-jobs = 1
+            cores = 2
+      - name: Build Git desktop and complete reference system
+        run: python3 -m lxqt.ci build
+      - name: Upload runtime closures only
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 -m lxqt.ci push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lxqt-reference-systems
+          path: lxqt/reference-systems.json
+          retention-days: 3
+  publish:
+    needs: [prepare, build]
+    if: needs.prepare.outputs.build == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v4
+        with:
+          name: lxqt-snapshot
+          path: lxqt
+      - uses: actions/download-artifact@v4
+        with:
+          name: lxqt-reference-systems
+          path: lxqt
+      - name: Free runner disk
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Verify complete closures without compilation
+        run: python3 -m lxqt.ci verify
+      - name: Check shared budget and retain one runtime snapshot
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 -m lxqt.ci retain
+      - name: Publish verified LXQt
+        run: python3 -m lxqt.ci publish

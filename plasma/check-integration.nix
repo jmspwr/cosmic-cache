@@ -49,6 +49,10 @@ assert applications == appPaths baseline;
 assert appPaths modulePkgs == applications;
 assert builtins.all (name: builtins.elem applications.${name} installed) [
   "easyeffects"
+  "breeze-qt5"
+  "plasma-integration-qt5"
+];
+assert builtins.all (name: !(builtins.elem applications.${name} installed)) [
   "dolphin"
   "ark"
   "konsole"
@@ -57,8 +61,6 @@ assert builtins.all (name: builtins.elem applications.${name} installed) [
   "gwenview"
   "okular"
   "khelpcenter"
-  "breeze-qt5"
-  "plasma-integration-qt5"
 ];
 {
   inherit applications;

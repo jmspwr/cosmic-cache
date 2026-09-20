@@ -18,14 +18,14 @@ Builds current Plasma Git sources for x86_64-linux and publishes verified binari
    five waves, grouping dependent packages onto the same runner within a wave. Independent batches
    build in parallel; later waves download non-debug outputs uploaded by earlier waves.
 4. Build complete public reference systems on current `nixos-unstable` and the host revision from
-   the EasyEffects regression. These include the default Gear apps, Qt5 integration and EasyEffects.
+   the EasyEffects regression. These exclude optional Gear apps and include Qt5 integration and EasyEffects.
    Assert that application store paths match the unmodified host package set, and upload complete
    reference runtime closures. Compilation runs with one build job and two cores, without cache credentials.
-5. On a fresh runner, download **every non-debug output of every required Plasma package** and both
+5. On a fresh runner, download **every runtime output of every required Plasma package**, including session definitions, and both
    complete reference closures with local and remote compilation disabled. Independently evaluate
    their full systems and application identities, and also evaluate the packaging-tree host.
 6. Protect those outputs and the reference closures with a Cachix retention root, keeping one
-   revision. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
+   revision, after checking the combined desktop storage budget. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
    client code and `cache-proof.json`.
 
 Unchanged component heads, packaging and builder code skip evaluation and builds. Interrupted or
@@ -41,7 +41,7 @@ proves substitution and package identity, not that the desktop works on every ma
 Separate `debug` outputs are intentionally omitted from uploads, verification and retention.
 They contain debugging symbols and reference source trees; neither is required to run Plasma.
 Package recipes, source commits and output paths are unchanged, so existing non-debug binaries
-remain reusable. Headers, build tools and session files remain cached. This is an output
+remain reusable. Headers and build tools can be uploaded for later CI waves, but are no longer pinned; runtime outputs and session files remain protected. This is an output
 selection policy, not a `separateDebugInfo` override that would force a rebuild of the desktop.
 If a required output genuinely references a debug path, its closure still includes that path.
 
@@ -63,7 +63,7 @@ published proof, and configures the public cache. It replaces the host's Plasma 
 package lists cannot request removed components such as `kwin-x11` or `kgamma`.
 It does **not** overlay the host's `pkgs.kdePackages`. Gear applications, EasyEffects and the Qt5
 Breeze/integration variants keep their ordinary channel derivations, rather than rebuilding against
-Git Breeze. The public reference profile checks their identities and complete runtime coverage.
+Git Breeze. Optional application bundles are excluded by default using `plasma/minimal.nix`; ordinary user declarations can override the exclusion list. The public profile checks that excluded applications stay absent and native application identities remain unchanged.
 Conflicting explicitly installed Plasma components fail an assertion. Additional personal apps
 still follow your channel's cache availability, and your own system assembly still runs locally.
 
@@ -90,6 +90,6 @@ system or proprietary applications are uploaded.
 
 ```sh
 python3 -m unittest discover -s tests -v # from the repository root
-for file in *.nix cosmic/*.nix plasma/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
+for file in *.nix cosmic/*.nix plasma/*.nix gnome/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
 actionlint
 ```

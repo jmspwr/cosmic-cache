@@ -1,0 +1,26 @@
+name: Measure desktop runtime storage
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [scripts/storage.py, .github/workflows/storage.yml]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - run: python3 -m scripts.storage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storage-report
+          path: storage-report.json
+          retention-days: 3

@@ -31,6 +31,8 @@ CLIENT_FILES = [
     "default.nix",
     "packages.nix",
     "scripts/cache.py",
+    "scripts/storage.py",
+    ".github/workflows/desktops.yml",
 ]
 
 
@@ -372,6 +374,11 @@ def verify(revision: str) -> None:
 
 
 def retain() -> None:
+    from scripts.storage import check
+    report = check("cosmic")
+    proof = json.loads(Path("cache-proof.json").read_text())
+    proof["storage"] = {k: v for k, v in report.items() if k != "paths"}
+    dump("cache-proof.json", proof)
     root = run("nix-build", "retention-root.nix", "--no-out-link", *options())
     c = cache()["name"]
     run("nix", "run", "nixpkgs#cachix", "--", "push", c, *shared.PUSH_OPTIONS, root, capture=False)

@@ -1,0 +1,54 @@
+name: Build verified desktop caches
+on:
+  workflow_dispatch:
+    inputs:
+      desktop:
+        description: Desktop to update
+        type: choice
+        options: [all, cosmic, plasma, gnome, lxqt]
+        default: all
+      resume_run:
+        description: Resume an interrupted Plasma snapshot (optional)
+        required: false
+      rev:
+        description: Plasma packaging revision override (optional)
+        required: false
+      mode:
+        description: Plasma source mode
+        type: choice
+        options: [git, beta]
+        default: git
+  schedule:
+    - cron: '7 * * * *'
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: desktop-cache
+  cancel-in-progress: false
+jobs:
+  cosmic:
+    if: github.event.repository.visibility == 'public' && (inputs.desktop == '' || inputs.desktop == 'all' || inputs.desktop == 'cosmic')
+    uses: ./.github/workflows/cosmic.yml
+    secrets: inherit
+  plasma:
+    needs: cosmic
+    if: ${{ !cancelled() && github.event.repository.visibility == 'public' && (inputs.desktop == '' || inputs.desktop == 'all' || inputs.desktop == 'plasma') }}
+    uses: ./.github/workflows/plasma.yml
+    secrets: inherit
+    with:
+      resume_run: ${{ inputs.resume_run || '' }}
+      rev: ${{ inputs.rev || '' }}
+      mode: ${{ inputs.mode || 'git' }}
+  gnome:
+    needs: [cosmic, plasma]
+    if: ${{ !cancelled() && github.event.repository.visibility == 'public' && (inputs.desktop == '' || inputs.desktop == 'all' || inputs.desktop == 'gnome') }}
+    uses: ./.github/workflows/gnome.yml
+    secrets: inherit
+  lxqt:
+    needs: [cosmic, plasma, gnome]
+    if: ${{ !cancelled() && github.event.repository.visibility == 'public' && (inputs.desktop == '' || inputs.desktop == 'all' || inputs.desktop == 'lxqt') }}
+    uses: ./.github/workflows/lxqt.yml
+    secrets: inherit

@@ -92,6 +92,7 @@ class PipelineTests(unittest.TestCase):
                  patch.object(ci, 'snapshot', return_value=value), \
                  patch.object(ci, 'package_info', return_value={
                      'plasma-workspace': {'version': '6.8.80', 'preferLocalBuild': False}}), \
+                 patch.object(ci, 'runtime_paths', return_value=['/nix/store/runtime']), \
                  patch.object(ci, 'client_digest', return_value='client'), \
                  patch.object(ci, 'options', return_value=[]), \
                  patch.object(ci, 'github_json', return_value={'sha': host_revision}), \
@@ -116,6 +117,7 @@ class PipelineTests(unittest.TestCase):
                  patch.object(ci, 'snapshot', return_value=value), \
                  patch.object(ci, 'package_info', return_value={
                      'plasma-workspace': {'version': '6.8.80', 'preferLocalBuild': False}}), \
+                 patch.object(ci, 'runtime_paths', return_value=['/nix/store/runtime']), \
                  patch.object(ci, 'client_digest', return_value='client'), \
                  patch.object(ci, 'options', return_value=[]), \
                  patch.object(ci, 'integration_check', return_value=result), \
@@ -177,8 +179,8 @@ class PipelineTests(unittest.TestCase):
                  patch.object(ci, 'run', return_value='/nix/store/' + 'a' * 32 + '-a') as run:
                 ci.build(['a', 'b'], 'a' * 40)
             args = run.call_args.args
-            self.assertIn('outputs.a', args)
-            self.assertIn('outputs.b', args)
+            self.assertIn('buildOutputs.a', args)
+            self.assertIn('buildOutputs.b', args)
 
 
 

@@ -30,6 +30,9 @@ CLIENT_FILES = [
     "plasma/check-integration.nix",
     "plasma/default.nix",
     "plasma/module-packages.nix",
+    "plasma/minimal.nix",
+    "scripts/storage.py",
+    ".github/workflows/desktops.yml",
     "plasma/packages.nix",
     "plasma/profile.nix",
     "plasma/retention-root.nix",
@@ -275,7 +278,7 @@ def build(names: list[str], revision: str) -> None:
     value = snapshot(revision)
     if not names or not set(names) <= set(value["needed"]):
         raise ValueError("Expected a nonempty batch of snapshot packages")
-    attributes = [arg for name in names for arg in ("-A", "outputs." + name)]
+    attributes = [arg for name in names for arg in ("-A", "buildOutputs." + name)]
     built = run(
         "nix-build", "packages.nix", *attributes, "--no-out-link",
         "--max-jobs", "1", *options(),
@@ -300,6 +303,10 @@ def package_info() -> dict:
     ))
 
 
+def runtime_paths() -> list[str]:
+    return json.loads(run("nix", "eval", "--impure", "--json", "--file", "packages.nix", "--apply", "p: map toString (builtins.concatLists (builtins.attrValues p.outputs))"))
+
+
 def proof_data(revision: str, value: dict) -> dict:
     info = package_info()
     if any(p["preferLocalBuild"] not in (False, "", "0", None) for p in info.values()):
@@ -315,10 +322,11 @@ def proof_data(revision: str, value: dict) -> dict:
         "builderRevision": os.environ["GITHUB_SHA"],
         "method": (
             "fresh-job nix-build: max-jobs=0, no remote builders; "
-            "all non-debug outputs of required Plasma packages; module-scoped Git packages; "
+            "runtime outputs of required Plasma packages; module-scoped Git packages; "
             "unchanged host application identities"
         ),
         "packages": info,
+        "runtimePaths": runtime_paths(),
     }
 
 
@@ -410,6 +418,11 @@ def verify(revision: str) -> None:
 
 
 def retain() -> None:
+    from scripts.storage import check
+    report = check("plasma")
+    proof = json.loads(Path("cache-proof.json").read_text())
+    proof["storage"] = {k: v for k, v in report.items() if k != "paths"}
+    dump("cache-proof.json", proof)
     root = run("nix-build", "retention-root.nix", "--no-out-link", *options())
     c = cache()["name"]
     run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", c, *shared.PUSH_OPTIONS, root, capture=False)

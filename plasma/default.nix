@@ -25,6 +25,7 @@ in
   # works when the host and packaging snapshot happen to be the same Nixpkgs.
   disabledModules = [ "services/desktop-managers/plasma6.nix" ];
   imports = [
+    ./minimal.nix
     (
       {
         config,
