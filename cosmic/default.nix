@@ -16,6 +16,14 @@ in
   ];
   assertions = [
     {
+      assertion =
+        proof.schema == 3
+        && snapshot.schema == 2
+        && lib.hasSuffix "/${proof.revision}" snapshot.url
+        && builtins.attrNames packages == builtins.attrNames proof.packages;
+      message = "The COSMIC snapshot and cache proof do not match.";
+    }
+    {
       assertion = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
       message = "This COSMIC cache publishes x86_64-linux packages only.";
     }
@@ -28,6 +36,10 @@ in
   ];
   nixpkgs.overlays = lib.mkAfter [ cosmicOverlay ];
   nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     extra-substituters = [ cache.uri ];
     extra-trusted-public-keys = cache.publicSigningKeys;
   };

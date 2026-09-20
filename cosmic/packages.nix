@@ -2,13 +2,7 @@ let
   snapshot = builtins.fromJSON (builtins.readFile ./snapshot.json);
   upstream = builtins.getFlake snapshot.url;
   inherit (upstream.inputs.nixpkgs) lib;
-  nixpkgs = upstream.inputs.nixpkgs.legacyPackages.x86_64-linux;
-  base = upstream.packages.x86_64-linux;
-  packages =
-    base
-    // lib.optionalAttrs (lib.functionArgs base.cosmic-comp.override ? libdisplay-info) {
-      cosmic-comp = base.cosmic-comp.override { libdisplay-info = nixpkgs.libdisplay-info_0_3; };
-    };
+  packages = upstream.packages.x86_64-linux;
   selected =
     name:
     (
