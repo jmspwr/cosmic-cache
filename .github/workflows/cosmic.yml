@@ -41,7 +41,6 @@ jobs:
           retention-days: 3
   source-publish:
     needs: source
-    if: needs.source.outputs.changed == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -51,21 +50,23 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/download-artifact@v4
+        if: needs.source.outputs.changed == 'true'
         with:
           name: source
       - name: Publish immutable source without executing upstream code
+        if: needs.source.outputs.changed == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SOURCE_REV: ${{ needs.source.outputs.revision }}
         run: python3 -m cosmic.ci publish-source
   prepare:
     needs: [source, source-publish]
-    if: ${{ !cancelled() && needs.source.result == 'success' && (needs.source-publish.result == 'success' || needs.source-publish.result == 'skipped') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     outputs:
       revision: ${{ steps.resolve.outputs.revision }}
       matrix: ${{ steps.resolve.outputs.matrix }}
+      host: ${{ steps.resolve.outputs.host }}
       build: ${{ steps.resolve.outputs.build }}
     steps:
       - uses: actions/checkout@v7
@@ -116,6 +117,7 @@ jobs:
     timeout-minutes: 90
     env:
       SOURCE_REV: ${{ needs.prepare.outputs.revision }}
+      HOST_REV: ${{ needs.prepare.outputs.host }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -195,3 +197,17 @@ jobs:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 -m cosmic.ci publish
+  result:
+    needs: [prepare, publish]
+    if: ${{ !cancelled() && github.event.repository.visibility == 'public' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require publication whenever an update was selected
+        env:
+          PREPARE: ${{ needs.prepare.result }}
+          BUILD_NEEDED: ${{ needs.prepare.outputs.build }}
+          PUBLISH: ${{ needs.publish.result }}
+        run: |
+          test "$PREPARE" = success
+          if [ "$BUILD_NEEDED" = true ]; then test "$PUBLISH" = success; fi

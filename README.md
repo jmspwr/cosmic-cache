@@ -54,7 +54,7 @@ system rebuild. Updating this cache does not update your own Nixpkgs channel or 
 6. Measure compressed cache use and protect both the new candidate and the currently advertised
    snapshot. Advance `cosmic-cache` without force-pushing, then release the previous retention.
 
-Unchanged verified sources and client definitions skip package rebuilding. Active builds finish before
+Unchanged verified sources, reference channel and client definitions skip package rebuilding. Active builds finish before
 a later update starts. Failures leave the previous publication in place. Retention always follows the
 actually published snapshot, including after repeated failed attempts; a branch race stops publication.
 
@@ -79,7 +79,7 @@ reclaims them. [Retention pins](https://docs.cachix.org/pins) protect the advert
 NixOS configurations and local rollback generations are never uploaded or deleted.
 
 The source updater runs without publication credentials. Compilation receives no Cachix write token.
-Only upload/retention steps receive the cache-scoped secret; only source/publication steps receive
+Only upload/retention steps receive the cache-scoped secret; only isolated publication jobs receive
 GitHub write credentials. Pull requests run unprivileged checks and cannot publish.
 
 Successful build, substitution and integration checks establish the recorded reference result. They

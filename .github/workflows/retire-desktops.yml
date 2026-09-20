@@ -39,25 +39,14 @@ jobs:
                   raise RuntimeError(result.stderr)
               print(f'Retired {branch}')
           PY
-      - name: Release discarded desktop cache pins
+      - uses: cachix/install-nix-action@v31
+      - name: Build an empty retention root
+        run: |
+          nix-build --expr 'let pkgs = import (builtins.fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz") {}; in pkgs.writeText "retired-cache-root" ""' --no-out-link > "$RUNNER_TEMP/retired-root"
+      - name: Release the retired runtime through the supported Cachix client
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: |
-          python3 - <<'PY'
-          import json, os, urllib.request
-          base = 'https://app.cachix.org/api/v1/cache/jmspwr/pin'
-          headers = {'Authorization': 'Bearer ' + os.environ['CACHIX_AUTH_TOKEN']}
-          def request(url, method='GET'):
-              with urllib.request.urlopen(urllib.request.Request(url, headers=headers, method=method), timeout=60) as response:
-                  return response.read()
-          pins = json.loads(request(base))
-          retired = {'plasma-x86_64-linux', 'gnome-x86_64-linux', 'lxqt-x86_64-linux'}
-          for pin in pins:
-              if pin['name'] in retired:
-                  request(base + '/' + pin['name'], 'DELETE')
-                  print('Released retention:', pin['name'])
-          remaining = json.loads(request(base))
-          if any(pin['name'] in retired for pin in remaining):
-              raise RuntimeError('A retired desktop is still pinned')
-          print('Discarded desktops no longer have cache retention pins')
-          PY
+          root=$(cat "$RUNNER_TEMP/retired-root")
+          nix run nixpkgs#cachix -- push jmspwr "$root"
+          nix run nixpkgs#cachix -- pin jmspwr plasma-x86_64-linux "$root" --keep-revisions 1

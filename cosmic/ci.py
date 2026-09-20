@@ -296,14 +296,23 @@ def package_info() -> dict:
     )
 
 
+def host_revision() -> str:
+    sha = run("git", "ls-remote", "--exit-code", "https://github.com/NixOS/nixpkgs.git", "refs/heads/nixos-unstable").split()[0]
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        raise ValueError("Invalid nixos-unstable revision")
+    return sha
+
+
 def resolve(revision: str) -> None:
     cache()
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
         raise ValueError("Invalid source revision")
     proof = published()
+    host = host_revision()
     build_needed = (
         proof.get("revision") != revision
         or proof.get("clientDigest") != client_digest()
+        or proof.get("referenceSystems", {}).get("nixos-unstable", {}).get("revision") != host
     )
     names = []
     if build_needed:
@@ -318,6 +327,7 @@ def resolve(revision: str) -> None:
 
     with open(os.environ["GITHUB_OUTPUT"], "a") as out:
         out.write("revision=" + revision + "\n")
+        out.write("host=" + host + "\n")
         out.write("matrix=" + json.dumps(names, separators=(",", ":")) + "\n")
         out.write("build=" + ("true" if build_needed else "false") + "\n")
     print(
@@ -392,9 +402,9 @@ def build_reference(revision: str) -> None:
     proof = proof_for(revision)
     dump("cache-proof.json", proof)
     fetch_packages()
-    sha = run("git", "ls-remote", "--exit-code", "https://github.com/NixOS/nixpkgs.git", "refs/heads/nixos-unstable").split()[0]
+    sha = os.environ.get("HOST_REV") or host_revision()
     if not re.fullmatch(r"[0-9a-f]{40}", sha):
-        raise ValueError("Invalid nixos-unstable revision")
+        raise ValueError("Invalid reference host revision")
     host = {"revision": sha, "sha256": run("nix-prefetch-url", "--unpack", "https://github.com/NixOS/nixpkgs/archive/" + sha + ".tar.gz")}
     system = reference(host)
     run("nix-build", system["systemDerivation"], "--no-out-link", "--max-jobs", "1", "--cores", "2", *options(), capture=False)

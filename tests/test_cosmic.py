@@ -15,6 +15,31 @@ spec.loader.exec_module(ci)
 
 
 class PipelineTests(unittest.TestCase):
+    def test_changed_host_requires_verification_even_when_sources_are_unchanged(self):
+        proof = {'revision': 'a' * 40, 'clientDigest': 'same',
+                 'referenceSystems': {'nixos-unstable': {'revision': 'old-host'}}}
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            output = Path(directory, 'output')
+            with patch.dict(os.environ, GITHUB_OUTPUT=str(output)), \
+                 patch.object(ci, 'cache'), patch.object(ci, 'published', return_value=proof), \
+                 patch.object(ci, 'host_revision', return_value='new-host'), \
+                 patch.object(ci, 'client_digest', return_value='same'), \
+                 patch.object(ci, 'package_info', return_value=dict.fromkeys(SourceTests.required)):
+                ci.resolve(proof['revision'])
+            self.assertIn('build=true', output.read_text())
+            self.assertIn('host=new-host', output.read_text())
+
+    def test_published_snapshot_retry_only_finishes_retention(self):
+        proof = {'storage': {'compressedBytes': 1}, 'publicationParent': 'old', 'retentionRoot': '/root'}
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            ci.dump('cache-proof.json', proof)
+            with patch.object(ci, 'validate_proof'), \
+                 patch.object(ci, 'published', return_value={**proof, 'publicationRevision': 'new'}), \
+                 patch.object(ci.shared, 'publish') as publish, patch.object(ci, 'pin_root') as pin:
+                ci.publish()
+            publish.assert_not_called()
+            pin.assert_called_once_with('/root')
+
     def test_upstream_execution_does_not_inherit_publication_secrets(self):
         with patch.dict(os.environ, {
             'GITHUB_TOKEN': 'github-secret', 'GH_TOKEN': 'gh-secret',
@@ -80,13 +105,14 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(json.loads(Path('cache-proof.json').read_text())['publicationParent'], 'advertised')
 
     def test_unchanged_snapshot_skips_nix_evaluation(self):
-        proof = {'revision': 'a' * 40, 'clientDigest': 'same'}
+        proof = {'revision': 'a' * 40, 'clientDigest': 'same', 'referenceSystems': {'nixos-unstable': {'revision': 'host'}}}
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'output'
             with patch.dict(os.environ, GITHUB_OUTPUT=str(output)), \
                  patch.object(ci, 'cache'), \
                  patch.object(ci, 'published', return_value=proof), \
                  patch.object(ci, 'client_digest', return_value='same'), \
+                 patch.object(ci, 'host_revision', return_value='host'), \
                  patch.object(ci, 'package_info') as package_info:
                 ci.resolve(proof['revision'])
             package_info.assert_not_called()
@@ -107,6 +133,44 @@ class SourceTests(unittest.TestCase):
                 'src = fetchFromGitHub {\n owner = "pop-os";\n repo = "' + name
                 + '";\n rev = "' + 'a' * 40 + '";\n};\n'
             )
+
+    def test_source_bundle_publishes_without_running_upstream_and_rejects_workflows(self):
+        real_run = ci.run
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, remote = root / 'source', root / 'remote.git'
+            real_run('git', 'init', str(source))
+            real_run('git', 'init', '--bare', str(remote))
+            real_run('git', 'config', 'user.name', 'Test', cwd=source)
+            real_run('git', 'config', 'user.email', 'test@example.invalid', cwd=source)
+            (source / '.cosmic-cache-source.json').write_text('{}')
+            real_run('git', 'add', '.', cwd=source)
+            real_run('git', 'commit', '-m', 'Source', cwd=source)
+            revision = real_run('git', 'rev-parse', 'HEAD', cwd=source)
+
+            def bundle():
+                (root / 'source.bundle').unlink(missing_ok=True)
+                real_run('git', 'update-ref', 'refs/heads/snapshot', 'HEAD', cwd=source)
+                real_run('git', 'bundle', 'create', str(root / 'source.bundle'), 'refs/heads/snapshot', cwd=source)
+
+            def local_run(*args, **kwargs):
+                if args[:2] == ('git', 'push'):
+                    args = (*args[:2], str(remote), *args[3:])
+                return real_run(*args, **kwargs)
+
+            bundle()
+            with patch.object(ci.shared, 'ROOT', root), patch.object(ci, 'run', side_effect=local_run), \
+                 patch.dict(os.environ, GITHUB_TOKEN='test'):
+                ci.publish_source(revision)
+                self.assertEqual(real_run('git', 'rev-parse', 'refs/heads/source', cwd=remote), revision)
+                (source / '.github').mkdir()
+                (source / '.github/workflow.yml').write_text('untrusted')
+                real_run('git', 'add', '.', cwd=source)
+                real_run('git', 'commit', '-m', 'Invalid source', cwd=source)
+                bundle()
+                with self.assertRaisesRegex(RuntimeError, 'Invalid source snapshot'):
+                    ci.publish_source(real_run('git', 'rev-parse', 'HEAD', cwd=source))
+                self.assertEqual(real_run('git', 'rev-parse', 'refs/heads/source', cwd=remote), revision)
 
     def test_core_repositories_are_tracked(self):
         with tempfile.TemporaryDirectory() as directory:
