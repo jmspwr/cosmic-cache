@@ -16,11 +16,11 @@ jobs:
           python3 - <<'PY'
           import json, os, subprocess
           repo = os.environ['GITHUB_REPOSITORY']
-          run_id = 35522004493
+          run_id = 35522859791
           def get(path):
               return json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/{path}'], text=True))
           run = get(f'actions/runs/{run_id}')
-          if run['head_sha'] != 'a58747b9f8a96fe8d613e60f35ca7f67a67f5910' or run['status'] == 'completed':
+          if run['head_sha'] != 'c1878bc5ac202c02a849ff441e0d8766fc598036' or run['status'] == 'completed':
               raise SystemExit('The obsolete run is already finished or differs; no action.')
           jobs = get(f'actions/runs/{run_id}/jobs?per_page=100')['jobs']
           if any(job['status'] == 'in_progress' for job in jobs):

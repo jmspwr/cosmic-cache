@@ -65,5 +65,10 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
-      - name: Evaluate all four published desktops together
-        run: nix-instantiate --eval --strict --json checks/combined.nix
+      - name: Build all four published desktops together
+        run: python3 -m scripts.integration all
+      - uses: actions/upload-artifact@v4
+        with:
+          name: combined-integration
+          path: combined-check.json
+          retention-days: 3

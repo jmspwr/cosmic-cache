@@ -21,7 +21,7 @@ PROJECTS = [
     "lxqt-panel", "lxqt-runner", "pcmanfm-qt", "xdg-desktop-portal-lxqt",
 ]
 CLIENT_FILES = [".github/workflows/desktops.yml", ".github/workflows/lxqt.yml", "cache.json",
-    "scripts/cache.py", "scripts/storage.py", "scripts/desktop.py"] + ["lxqt/" + p for p in
+    "scripts/cache.py", "scripts/storage.py", "scripts/integration.py", "checks/combined.nix", "scripts/desktop.py"] + ["lxqt/" + p for p in
     ["ci.py", "packages.nix", "default.nix", "profile.nix", "check-integration.nix", "retention-root.nix"]]
 
 
