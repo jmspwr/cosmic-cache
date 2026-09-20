@@ -9,7 +9,13 @@ let
   proof = builtins.fromJSON (builtins.readFile ./cache-proof.json);
   cache = builtins.fromJSON (builtins.readFile ../cache.json);
   modulePkgs = pkgs // {
-    lxqt = packages.scope;
+    lxqt = packages.scope // {
+      # Plasma already installs kscreen-doctor and its plugins. Keep LXQt's
+      # native libkscreen in package closures, without a second global copy.
+      preRequisitePackages = builtins.filter (
+        p: !config.services.desktopManager.plasma6.enable || (p.pname or "") != "libkscreen"
+      ) packages.scope.preRequisitePackages;
+    };
   };
   desktopModule = "services/x11/desktop-managers/lxqt.nix";
   portalModule = "config/xdg/portals/lxqt.nix";
@@ -56,8 +62,9 @@ in
       };
     }
     (lib.mkIf config.services.xserver.desktopManager.lxqt.enable {
+      powerManagement.enable = lib.mkDefault true;
       programs.labwc.enable = lib.mkDefault true;
-      programs.swaylock.enable = lib.mkDefault true;
+      security.pam.services.swaylock = { };
       services.displayManager.sessionPackages = [ packages.scope.lxqt-wayland-session ];
       xdg.portal = {
         wlr.enable = lib.mkDefault true;
@@ -66,7 +73,10 @@ in
           "org.freedesktop.impl.portal.Screenshot" = lib.mkDefault [ "wlr" ];
         };
       };
-      environment.systemPackages = [ pkgs.slurp ];
+      environment.systemPackages = [
+        pkgs.slurp
+        pkgs.swaylock
+      ];
     })
   ];
 }

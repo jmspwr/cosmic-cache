@@ -90,13 +90,13 @@ COSMIC uses `amozeo/nixos-cosmic`'s updater and verifies component HEADs. Plasma
 Invent HEADs with Nixpkgs recipes (PR 561955 while open); GNOME resolves GNOME GitLab HEADs
 with its integration packaging. LXQt resolves each desktop repository’s default-branch HEAD
 against nixos-unstable packaging. Sources and hashes are immutable within each build. Unchanged
-source/client snapshots skip rebuilding. A failed desktop does not stop the other desktop jobs,
+source/client snapshots skip rebuilding. Completed GNOME/LXQt runtime outputs are salvaged after build failures. A failed desktop does not stop the other desktop jobs,
 but it leaves its own previous publication in place. Plasma's explicit `beta` mode is available
 through manual dispatch; Git failures never silently fall back to it.
 
 Fresh verification runners fetch promised runtime outputs with local and remote compilation
 disabled. Plasma, GNOME and LXQt also build and fetch complete public reference systems and compare
-native application identities with an unmodified host. Their consumer modules check exact cached
+native application identities with an unmodified host. The shared workflow also evaluates all four published modules together. Their consumer modules check exact cached
 package identities. Successful evaluation/build/download checks do not establish graphical boot
 or arbitrary old-channel compatibility.
 
@@ -110,7 +110,7 @@ snapshot artifact remains available.
 
 ```sh
 python3 -m unittest discover -s tests -v
-for file in *.nix cosmic/*.nix plasma/*.nix gnome/*.nix lxqt/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
+for file in *.nix cosmic/*.nix plasma/*.nix gnome/*.nix lxqt/*.nix checks/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
 actionlint
 ```
 

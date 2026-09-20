@@ -1,6 +1,6 @@
 {
-  "builderRevision": "410128e272693de62b968315ac36400efd6ba91d",
-  "clientDigest": "29e9c8294deff28d0eaa100010d8487edadfc07f03dd66a7100821a9ac392dc7",
+  "builderRevision": "a58747b9f8a96fe8d613e60f35ca7f67a67f5910",
+  "clientDigest": "41a1332d8ec4d15400f9e7f47dd27810b470906bac90ee8111cb116e460edcb7",
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
@@ -179,5 +179,5 @@
     "scope": "Published runtime closures, not total account usage or obsolete unpinned data",
     "updateOverlapBytes": 864073745
   },
-  "verifiedAt": "2026-09-20T16:00:40.203634+00:00"
+  "verifiedAt": "2026-09-20T16:15:33.811197+00:00"
 }

@@ -58,6 +58,11 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: python3 -m gnome.ci push
+      - name: Save completed runtime outputs after a failure
+        if: failure()
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 -m gnome.ci salvage
       - uses: actions/upload-artifact@v4
         with:
           name: gnome-reference-systems

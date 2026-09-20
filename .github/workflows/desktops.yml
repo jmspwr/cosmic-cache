@@ -52,3 +52,18 @@ jobs:
     if: ${{ !cancelled() && github.event.repository.visibility == 'public' && (inputs.desktop == '' || inputs.desktop == 'all' || inputs.desktop == 'lxqt') }}
     uses: ./.github/workflows/lxqt.yml
     secrets: inherit
+  integration:
+    needs: [cosmic, plasma, gnome, lxqt]
+    if: ${{ !cancelled() && (inputs.desktop == '' || inputs.desktop == 'all') && needs.cosmic.result == 'success' && needs.plasma.result == 'success' && needs.gnome.result == 'success' && needs.lxqt.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Evaluate all four published desktops together
+        run: nix-instantiate --eval --strict --json checks/combined.nix

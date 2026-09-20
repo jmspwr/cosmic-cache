@@ -13,6 +13,13 @@ let
         (old: {
           version = source.version + "-git." + builtins.substring 0 12 source.revision;
           src = pkgs.fetchzip { inherit (source) url sha256; };
+          # Release tarballs ship generated WebAssembly test fixtures; Git needs wat2wasm.
+          nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ pkgs.lib.optional (name == "gjs") pkgs.wabt;
+          # Git added the Inspector test next to Introspection, invalidating the
+          # release patch's context. Preserve its sandbox exclusion below.
+          patches = builtins.filter (
+            p: name != "gjs" || builtins.baseNameOf (toString p) != "disable-introspection-test.patch"
+          ) (old.patches or [ ]);
           postUnpack =
             (old.postUnpack or "")
             + pkgs.lib.concatMapStrings (s: ''
@@ -23,8 +30,12 @@ let
             '') source.subprojects;
           # Git archives do not contain the generated CSS shipped in release tarballs.
           postPatch =
-            builtins.replaceStrings [ "rm data/theme/gnome-shell-" ] [ "rm -f data/theme/gnome-shell-" ]
-              (old.postPatch or "");
+            builtins.replaceStrings [ "rm data/theme/gnome-shell-" ] [ "rm -f data/theme/gnome-shell-" ] (
+              old.postPatch or ""
+            )
+            + pkgs.lib.optionalString (name == "gjs") ''
+              substituteInPlace installed-tests/js/meson.build --replace-fail "'Introspection'," ""
+            '';
         })
     ) snapshot.sources
   );
