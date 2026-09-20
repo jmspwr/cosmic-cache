@@ -1,0 +1,41 @@
+name: Retire other desktop builds
+on:
+  push:
+    branches: [main]
+permissions:
+  actions: write
+  contents: write
+jobs:
+  retire:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Stop retired pipelines and remove their publication branches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess, time
+          repo = os.environ['GITHUB_REPOSITORY']
+          def api(path, method='GET'):
+              return subprocess.run(['gh', 'api', '--method', method, f'repos/{repo}/{path}'], text=True, capture_output=True)
+          for attempt in range(60):
+              result = api('actions/runs?per_page=100')
+              result.check_returncode()
+              runs = [r for r in json.loads(result.stdout)['workflow_runs'] if r['name'] == 'Build verified desktop caches' and r['status'] != 'completed']
+              if not runs:
+                  break
+              for run in runs:
+                  result = api(f"actions/runs/{run['id']}/cancel", 'POST')
+                  if result.returncode and '409' not in result.stderr:
+                      raise RuntimeError(result.stderr)
+                  print(f"Requested cancellation of retired run {run['id']}", flush=True)
+              time.sleep(5)
+          else:
+              raise RuntimeError('Retired builds have not stopped; do not delete branches yet')
+          for branch in ('plasma-cache', 'gnome-cache', 'lxqt-cache'):
+              result = api(f'git/refs/heads/{branch}', 'DELETE')
+              if result.returncode and '422' not in result.stderr and '404' not in result.stderr:
+                  raise RuntimeError(result.stderr)
+              print(f'Retired {branch}')
+          PY
