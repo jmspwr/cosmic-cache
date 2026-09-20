@@ -11,6 +11,10 @@ let
       prev.${name}.overrideAttrs (old: {
         version = old.version + "-git." + builtins.substring 0 12 source.revision;
         src = pkgs.fetchzip { inherit (source) url sha256; };
+        # Git libdbusmenu adopted LXQt's CMake helpers after the packaged release.
+        nativeBuildInputs =
+          (old.nativeBuildInputs or [ ])
+          ++ pkgs.lib.optional (name == "libdbusmenu-lxqt") self.lxqt-build-tools;
         postPatch = builtins.replaceStrings [ "lxqt-hyprland.conf" ] [ "lxqt-hyprland.lua" ] (
           old.postPatch or ""
         );
