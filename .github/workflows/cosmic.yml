@@ -77,6 +77,8 @@ jobs:
             experimental-features = nix-command flakes
       - name: Verify downloads in a fresh runner and matching NixOS outputs
         run: python3 -m cosmic.ci verify
+      - name: Verify coexistence with published sibling desktops
+        run: python3 -m scripts.integration cosmic
       - name: Protect completed snapshots in Cachix
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}

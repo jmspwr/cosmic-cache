@@ -96,7 +96,9 @@ through manual dispatch; Git failures never silently fall back to it.
 
 Fresh verification runners fetch promised runtime outputs with local and remote compilation
 disabled. Plasma, GNOME and LXQt also build and fetch complete public reference systems and compare
-native application identities with an unmodified host. The shared workflow also evaluates all four published modules together. Their consumer modules check exact cached
+native application identities with an unmodified host. Each candidate must also evaluate alongside the published sibling desktops before publication.
+The shared workflow also builds a complete public NixOS fixture containing all four
+published desktops. That combined fixture is validation only; it is not an extra retained cache snapshot. Their consumer modules check exact cached
 package identities. Successful evaluation/build/download checks do not establish graphical boot
 or arbitrary old-channel compatibility.
 

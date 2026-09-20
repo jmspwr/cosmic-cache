@@ -31,7 +31,7 @@ CLIENT_FILES = [
     "default.nix",
     "packages.nix",
     "scripts/cache.py",
-    "scripts/storage.py",
+    "scripts/storage.py", "scripts/integration.py", "checks/combined.nix",
     ".github/workflows/desktops.yml",
 ]
 

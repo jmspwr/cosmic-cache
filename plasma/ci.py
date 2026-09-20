@@ -31,7 +31,7 @@ CLIENT_FILES = [
     "plasma/default.nix",
     "plasma/module-packages.nix",
     "plasma/minimal.nix",
-    "scripts/storage.py",
+    "scripts/storage.py", "scripts/integration.py", "checks/combined.nix",
     ".github/workflows/desktops.yml",
     "plasma/packages.nix",
     "plasma/profile.nix",

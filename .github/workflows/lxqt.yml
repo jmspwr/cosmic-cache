@@ -93,6 +93,8 @@ jobs:
             experimental-features = nix-command flakes
       - name: Verify complete closures without compilation
         run: python3 -m lxqt.ci verify
+      - name: Verify coexistence with published sibling desktops
+        run: python3 -m scripts.integration lxqt
       - name: Check shared budget and retain one runtime snapshot
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}

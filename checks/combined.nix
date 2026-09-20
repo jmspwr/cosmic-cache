@@ -1,12 +1,19 @@
 # Evaluate the four independently published consumers together, on one native host.
-let
-  desktops = [
+{
+  desktops ? [
     "cosmic"
     "plasma"
     "gnome"
     "lxqt"
-  ];
-  host = fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz";
+  ],
+  modules ? map (
+    d:
+    (fetchTarball "https://github.com/jmspwr/desktop-cache/archive/${d}-cache.tar.gz")
+    + "/${d}/default.nix"
+  ) desktops,
+  host ? fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz",
+}:
+let
   baseline = import host {
     system = "x86_64-linux";
     config = { };
@@ -14,20 +21,16 @@ let
   s = import (host + "/nixos") {
     system = "x86_64-linux";
     configuration = {
-      imports = map (
-        d:
-        (fetchTarball "https://github.com/jmspwr/desktop-cache/archive/${d}-cache.tar.gz")
-        + "/${d}/default.nix"
-      ) desktops;
+      imports = modules;
       boot.isContainer = true;
       powerManagement.enable = true;
       networking.networkmanager.enable = true;
       services.desktopManager = {
-        cosmic.enable = true;
-        plasma6.enable = true;
-        gnome.enable = true;
+        cosmic.enable = builtins.elem "cosmic" desktops;
+        plasma6.enable = builtins.elem "plasma" desktops;
+        gnome.enable = builtins.elem "gnome" desktops;
       };
-      services.xserver.desktopManager.lxqt.enable = true;
+      services.xserver.desktopManager.lxqt.enable = builtins.elem "lxqt" desktops;
       services.pipewire.enable = true;
       system.stateVersion = "25.11";
     };

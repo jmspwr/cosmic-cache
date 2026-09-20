@@ -1,6 +1,27 @@
 {
-  "builderRevision": "a58747b9f8a96fe8d613e60f35ca7f67a67f5910",
-  "clientDigest": "41a1332d8ec4d15400f9e7f47dd27810b470906bac90ee8111cb116e460edcb7",
+  "builderRevision": "bf685636c360a6d36f9ed6dc6a4cd74e213d7152",
+  "clientDigest": "0f7ab6d555c316f4a80dd9782b14d211be49fe22e071370e13c94d9ddd2b2900",
+  "combinedCheck": {
+    "applications": {
+      "dolphin": "/nix/store/l7jr0bmiwkc6gm24f42b519sg4nwd79n-dolphin-26.08.1",
+      "easyeffects": "/nix/store/9z1j6b97winpi6sfzm8yq7gv4909m7al-easyeffects-8.2.9",
+      "nautilus": "/nix/store/r1f6v9xp0rc3hpqyq7ap15b74hapkm7g-nautilus-50.2.2",
+      "qterminal": "/nix/store/r19hkjfnkzg93fnbjcwvbwbvhbswxc0j-qterminal-2.4.0"
+    },
+    "candidate": "cosmic",
+    "checkedAt": "2026-09-20T16:42:09.816177+00:00",
+    "hostRevision": "20b1ddd1aa5ace70c9468305030aa4f9ef79671b",
+    "hostSha256": "17c8rash8751zwzq426b54754znickr50nwd4ziq4pklm0pid3h7",
+    "publications": {
+      "cosmic": "bf685636c360a6d36f9ed6dc6a4cd74e213d7152",
+      "plasma": "45b451cf34b816d0a05a5ddc00fea876c0abfa62"
+    },
+    "sessions": [
+      "cosmic-session-1.8.0-unstable-2026-09-16",
+      "plasma-workspace-6.8.80-git.d820eeb190d2"
+    ],
+    "systemDerivation": "/nix/store/2nn9h7n1x56yl8r5gqmvkjxvwbj6znvc-nixos-system-nixos-26.11pre-git.drv"
+  },
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
     "cosmic-app-library": {
@@ -179,5 +200,5 @@
     "scope": "Published runtime closures, not total account usage or obsolete unpinned data",
     "updateOverlapBytes": 864073745
   },
-  "verifiedAt": "2026-09-20T16:15:33.811197+00:00"
+  "verifiedAt": "2026-09-20T16:40:50.482460+00:00"
 }

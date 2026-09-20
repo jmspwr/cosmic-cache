@@ -18,7 +18,7 @@ from scripts.cache import dump, run
 
 PR = 559510
 PROJECTS = ["gjs", "gnome-control-center", "gnome-session", "gnome-settings-daemon", "gnome-shell", "gsettings-desktop-schemas", "mutter", "xdg-desktop-portal-gnome"]
-CLIENT_FILES = [".github/workflows/desktops.yml", ".github/workflows/gnome.yml", "cache.json", "scripts/cache.py", "scripts/storage.py", "scripts/desktop.py"] + ["gnome/" + p for p in ["ci.py", "packages.nix", "default.nix", "profile.nix", "check-integration.nix", "retention-root.nix"]]
+CLIENT_FILES = [".github/workflows/desktops.yml", ".github/workflows/gnome.yml", "cache.json", "scripts/cache.py", "scripts/storage.py", "scripts/integration.py", "checks/combined.nix", "scripts/desktop.py"] + ["gnome/" + p for p in ["ci.py", "packages.nix", "default.nix", "profile.nix", "check-integration.nix", "retention-root.nix"]]
 
 
 def digest():
