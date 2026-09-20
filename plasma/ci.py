@@ -20,12 +20,16 @@ from scripts.cache import cache, dump, options, run
 NIXPKGS = "NixOS/nixpkgs"
 PULL_REQUEST = int(os.environ.get("PLASMA_PR", "561955"))
 STAGES = 5
+# Host revision from the EasyEffects/Qt5 rebuild regression report.
+REGRESSION_HOST = "c8ccf87ca64695ccfc74f260f54d3e25a096f5f6"
 CLIENT_FILES = [
     ".github/workflows/plasma-build.yml",
     ".github/workflows/plasma.yml",
     "cache.json",
     "plasma/ci.py",
+    "plasma/check-integration.nix",
     "plasma/default.nix",
+    "plasma/module-packages.nix",
     "plasma/packages.nix",
     "plasma/profile.nix",
     "plasma/retention-root.nix",
@@ -200,6 +204,38 @@ def git_sources(heads: dict[str, dict], previous: dict, value: dict) -> dict:
         return dict(pool.map(fetch, sorted(heads.items())))
 
 
+def write_matrix(revision: str, stages: list, build_needed: bool) -> None:
+    with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+        out.write("revision=" + revision + "\n")
+        for i, groups in enumerate(stages):
+            out.write(f"l{i}=" + json.dumps(groups, separators=(",", ":")) + "\n")
+        out.write("build=" + ("true" if build_needed else "false") + "\n")
+
+
+def resume() -> None:
+    """Reuse an interrupted run's immutable snapshot, never refresh its Git heads."""
+    cache()
+    value = json.loads(Path("snapshot.json").read_text())
+    revision = value["revision"]
+    if not re.fullmatch(r"[0-9a-f]{40}", revision) or value["url"] != tarball(revision):
+        raise ValueError("Invalid checkpoint packaging revision")
+    mode = value["mode"]
+    sources = value.get("gitSources", {})
+    if mode not in ("git", "beta") or (mode == "git" and set(sources) != set(value["projects"])):
+        raise ValueError("Incomplete checkpoint sources")
+    heads = {name: {key: source[key] for key in ("revision", "url")}
+             for name, source in sources.items()}
+    digest = hashlib.sha256(json.dumps(heads, sort_keys=True).encode()).hexdigest()
+    if digest != value["sourceDigest"]:
+        raise ValueError("Checkpoint source digest does not match")
+    stages = levels(value)
+    if len(value["needed"]) > 120:
+        raise RuntimeError("Unexpected checkpoint package matrix size")
+    dump("snapshot.json", value)
+    write_matrix(revision, stages, True)
+    print(f"Resuming immutable Plasma {mode} snapshot {digest}: {len(value['needed'])} packages")
+
+
 def resolve() -> None:
     cache()
     proof = published()
@@ -231,11 +267,7 @@ def resolve() -> None:
             raise RuntimeError("Unexpected package matrix size")
         dump("snapshot.json", value)
         print(f"Plasma {mode} at nixpkgs {revision}: batches {[len(s) for s in stages]}")
-    with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-        out.write("revision=" + revision + "\n")
-        for i, groups in enumerate(stages):
-            out.write(f"l{i}=" + json.dumps(groups, separators=(",", ":")) + "\n")
-        out.write("build=" + ("true" if build_needed else "false") + "\n")
+    write_matrix(revision, stages, build_needed)
     print(f"Build needed: {build_needed}")
 
 
@@ -264,56 +296,117 @@ def package_info() -> dict:
     return json.loads(run(
         "nix", "eval", "--impure", "--json", "--file", "packages.nix", "--apply",
         'p: builtins.mapAttrs (name: d: { path = toString d.out; version = d.version or "unknown"; '
-        'preferLocalBuild = d.preferLocalBuild or false; }) p.selected',
+        'preferLocalBuild = d.preferLocalBuild or false; }) p.provided',
     ))
+
+
+def proof_data(revision: str, value: dict) -> dict:
+    info = package_info()
+    if any(p["preferLocalBuild"] not in (False, "", "0", None) for p in info.values()):
+        raise RuntimeError("A source package forces local builds; refuse publication")
+    return {
+        "schema": 3,
+        "verifiedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "revision": revision,
+        "version": info["plasma-workspace"]["version"],
+        "mode": value["mode"],
+        "sourceDigest": value["sourceDigest"],
+        "clientDigest": client_digest(),
+        "builderRevision": os.environ["GITHUB_SHA"],
+        "method": (
+            "fresh-job nix-build: max-jobs=0, no remote builders; "
+            "all non-debug outputs of required Plasma packages; module-scoped Git packages; "
+            "unchanged host application identities"
+        ),
+        "packages": info,
+    }
+
+
+def integration_check(revision: str, sha256: str) -> dict:
+    return json.loads(run(
+        "nix", "eval", "--impure", "--json", "--expr",
+        f'(import ./check-integration.nix) {{ hostNixpkgs = {tree(revision, sha256)}; }}',
+    ))
+
+
+def reference(revision: str) -> None:
+    """Build the complete public profiles, including apps and Qt5 integration."""
+    value = snapshot(revision)
+    dump("cache-proof.json", proof_data(revision, value))
+    hosts = {
+        "nixos-unstable": github_json(f"https://api.github.com/repos/{NIXPKGS}/commits/nixos-unstable")["sha"],
+        "regression": REGRESSION_HOST,
+    }
+    systems = {}
+    for name, host_rev in hosts.items():
+        if not re.fullmatch(r"[0-9a-f]{40}", host_rev):
+            raise ValueError("Invalid reference host revision")
+        host_hash = run("nix-prefetch-url", "--unpack", tarball(host_rev))
+        check = integration_check(host_rev, host_hash)
+        result = run(
+            "nix-build", check["systemDerivation"], "--no-out-link", "--max-jobs", "1",
+            "--cores", "2", *options(),
+        )
+        if result != check["systemPath"]:
+            raise RuntimeError("Reference system output differs from evaluation")
+        systems[name] = {
+            "revision": host_rev, "sha256": host_hash, **check,
+            "closurePaths": len(run("nix-store", "-qR", result).split()),
+        }
+        print(f"Built complete {name} reference system: {result}")
+    dump("reference-systems.json", {
+        "sourceDigest": value["sourceDigest"], "clientDigest": client_digest(), "systems": systems,
+    })
+
+
+def push_reference() -> None:
+    if not os.environ.get("CACHIX_AUTH_TOKEN"):
+        raise ValueError("CACHIX_AUTH_TOKEN is not configured")
+    systems = json.loads(Path("reference-systems.json").read_text())["systems"]
+    paths = [system["systemPath"] for system in systems.values()]
+    run("nix", "run", "--file", "packages.nix", "cachix", "--", "push", cache()["name"],
+        *shared.PUSH_OPTIONS, *paths, capture=False)
 
 
 def verify(revision: str) -> None:
     value = snapshot(revision)
-    info = package_info()
-    if any(p["preferLocalBuild"] not in (False, "", "0", None) for p in info.values()):
-        raise RuntimeError("A source package forces local builds; refuse publication")
-
     expression = "builtins.concatLists (builtins.attrValues (import ./packages.nix).outputs)"
     run(
         "nix-build", "--expr", expression, "--no-out-link", "--max-jobs", "0",
         "--option", "builders", "", *options(), capture=False,
     )
-
-    dump(
-        "cache-proof.json",
-        {
-            "schema": 2,
-            "verifiedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "revision": revision,
-            "version": info["plasma-workspace"]["version"],
-            "mode": value["mode"],
-            "sourceDigest": value["sourceDigest"],
-            "clientDigest": client_digest(),
-            "builderRevision": os.environ["GITHUB_SHA"],
-            "method": (
-                "fresh-job nix-build: max-jobs=0, no remote builders; "
-                "all non-debug outputs of required Plasma packages; exact module-output equality"
-            ),
-            "packages": info,
-        },
-    )
-    t = tree(revision, value["sha256"])
-    expression = (
-        f'let n = import ({t} + "/nixos") {{ system = "x86_64-linux"; configuration = {{ imports = [ ./default.nix ./profile.nix ]; '
-        '}; }; '
-        'p = (import ./packages.nix).selected; '
-        'in builtins.all (a: a.assertion) n.config.assertions && '
-        'builtins.all (name: n.pkgs.kdePackages.${name}.outPath == p.${name}.outPath) (builtins.attrNames p)'
-    )
+    dump("cache-proof.json", proof_data(revision, value))
     try:
-        if run("nix", "eval", "--impure", "--json", "--expr", expression) != "true":
-            raise RuntimeError("NixOS integration assertions or output identity failed")
+        reference_data = json.loads(Path("reference-systems.json").read_text())
+        if (reference_data["sourceDigest"] != value["sourceDigest"]
+                or reference_data["clientDigest"] != client_digest()
+                or set(reference_data["systems"]) != {"nixos-unstable", "regression"}):
+            raise RuntimeError("Reference systems do not match this source/client snapshot")
+        checks = {"packaging": {
+            "revision": revision, "sha256": value["sha256"],
+            **integration_check(revision, value["sha256"]),
+        }}
+        for name, system in reference_data["systems"].items():
+            result = integration_check(system["revision"], system["sha256"])
+            if any(result[key] != system[key] for key in result):
+                raise RuntimeError(f"Reference system {name} differs from fresh evaluation")
+            # Realise the output path, not a derivation: this fetches the complete
+            # closure even when NixOS assembly derivations prefer local builds.
+            run("nix-store", "--realise", system["systemPath"], "--max-jobs", "0",
+                "--option", "builders", "", *options(), capture=False)
+            if len(run("nix-store", "-qR", system["systemPath"]).split()) != system["closurePaths"]:
+                raise RuntimeError(f"Reference system {name} closure differs")
+            checks[name] = system
+        proof = json.loads(Path("cache-proof.json").read_text())
+        proof["integrationChecks"] = checks
+        proof["referenceSystems"] = reference_data["systems"]
+        proof["method"] += "; complete reference system closures fetched without compilation"
+        dump("cache-proof.json", proof)
     except Exception:
         Path("cache-proof.json").unlink()
         raise
 
-    print("Cached package outputs and module-output identity verified")
+    print("Cached desktop and complete reference closures verified; host application paths unchanged")
 
 
 def retain() -> None:
@@ -328,14 +421,17 @@ def retain() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=["resolve", "build", "push", "verify", "retain", "publish"])
+    parser.add_argument("command", choices=["resolve", "resume", "build", "push", "reference", "push-reference", "verify", "retain", "publish"])
     parser.add_argument("--revision", default=os.environ.get("SOURCE_REV", ""))
     parser.add_argument("--packages", default=os.environ.get("PACKAGES", "[]"))
     args = parser.parse_args()
     {
         "resolve": resolve,
+        "resume": resume,
         "build": lambda: build(json.loads(args.packages), args.revision),
         "push": push,
+        "reference": lambda: reference(args.revision),
+        "push-reference": push_reference,
         "verify": lambda: verify(args.revision),
         "retain": retain,
         "publish": publish,

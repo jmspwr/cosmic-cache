@@ -1,5 +1,5 @@
 {
-  "builderRevision": "9fffe01dace2048608a2781aef1aa56de9f3d311",
+  "builderRevision": "389d2927b304ebd36eea49b58db6751734203b9f",
   "clientDigest": "f46e7e347008253d95fbd589ab00f5a8023cfb9b66c0e1f4694926b768864828",
   "method": "fresh-job nix-build: max-jobs=0, no remote builders; exact module-output equality",
   "packages": {
@@ -159,7 +159,7 @@
       "version": "1.8.0-unstable-2026-09-15"
     }
   },
-  "revision": "f45f75f0e590333f7b271d0a31fea9ba1bb96213",
+  "revision": "59e95b3e90ce9ccbff86135ff76a6e6e132c59db",
   "schema": 2,
-  "verifiedAt": "2026-09-19T22:08:19.547810+00:00"
+  "verifiedAt": "2026-09-20T14:12:22.285400+00:00"
 }

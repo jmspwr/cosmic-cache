@@ -20,6 +20,7 @@ in
   inherit (pkgs) cachix;
   plasma = pick snapshot.plasma;
   selected = pick snapshot.selected;
+  provided = pick snapshot.needed;
   # Debug symbols also retain source trees. Keep the derivations unchanged so
   # existing binaries remain reusable; publish every other output for CI/users.
   outputs = builtins.mapAttrs (_: p: map (o: p.${o}) (builtins.filter (o: o != "debug") p.outputs)) (
