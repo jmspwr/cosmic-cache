@@ -44,16 +44,17 @@ def archive(repo, revision, old=None):
 
 
 def source(repo, revision, old):
-    if old.get("revision") == revision:
+    if old.get("revision") == revision and old.get("sourceSchema") == 2:
         return old
-    value = archive(repo, revision)
+    value = archive(repo, revision, old)
+    value["sourceSchema"] = 2
     meson = fetch(api(repo, "files/meson.build/raw?ref=" + revision), False)
     version = re.search(r"\bversion\s*:\s*['\"]([^'\"]+)", meson)
     if not version:
         raise RuntimeError(f"Missing source version for {repo}")
     value["version"] = version[1]
     value["subprojects"] = []
-    if repo in {"gjs", "gnome-settings-daemon", "gnome-control-center", "xdg-desktop-portal-gnome"}:
+    if repo in {"gjs", "gnome-settings-daemon", "gnome-control-center", "xdg-desktop-portal-gnome", "gnome-shell", "mutter"}:
         entries = fetch(api(repo, "tree?path=subprojects&per_page=100&ref=" + revision))
         for entry in entries:
             if entry["type"] == "commit":
@@ -61,13 +62,17 @@ def source(repo, revision, old):
                 if not dependency:
                     raise RuntimeError(f"Unrecognised submodule {repo}/{entry['name']}")
                 value["subprojects"].append({"path": entry["path"], **archive(dependency, entry["id"])})
-            elif entry["name"] == "libgxdp.wrap":
+            elif entry["name"] in {"libgxdp.wrap", "gvdb.wrap", "libshew.wrap", "gvc.wrap"}:
+                dependency = {"gvc.wrap": "libgnome-volume-control"}.get(entry["name"], entry["name"].removesuffix(".wrap"))
                 wrap = configparser.ConfigParser()
-                wrap.read_string(fetch(api(repo, "files/subprojects%2Flibgxdp.wrap/raw?ref=" + revision), False))
+                wrap.read_string(fetch(api(repo, "files/subprojects%2F" + entry["name"] + "/raw?ref=" + revision), False))
                 ref = wrap["wrap-git"]["revision"]
-                if not re.fullmatch(r"[0-9a-f]{40}", ref) or wrap["wrap-git"]["url"] != "https://gitlab.gnome.org/GNOME/libgxdp.git":
-                    raise RuntimeError("Unpinned or unexpected libgxdp wrap")
-                value["subprojects"].append({"path": "subprojects/libgxdp", **archive("libgxdp", ref)})
+                if not re.fullmatch(r"[0-9a-f]{40}", ref) or wrap["wrap-git"]["url"] != f"https://gitlab.gnome.org/GNOME/{dependency}.git":
+                    raise RuntimeError(f"Unpinned or unexpected {entry['name']}")
+                directory = wrap["wrap-git"].get("directory", entry["name"].removesuffix(".wrap"))
+                if not re.fullmatch(r"[a-z][a-z0-9-]*", directory):
+                    raise RuntimeError("Invalid subproject directory")
+                value["subprojects"].append({"path": "subprojects/" + directory, **archive(dependency, ref)})
     return value
 
 
