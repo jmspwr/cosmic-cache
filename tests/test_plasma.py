@@ -83,6 +83,11 @@ class PipelineTests(unittest.TestCase):
             return ''
 
         with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            Path('reference-systems.json').write_text(json.dumps({
+                'sourceDigest': 'sources', 'clientDigest': 'client', 'systems': {
+                    'nixos-unstable': {'revision': host_revision, 'sha256': 'host-hash'},
+                    'regression': {'revision': ci.REGRESSION_HOST, 'sha256': 'regression-hash'},
+                }}))
             with patch.dict(os.environ, GITHUB_SHA='c' * 40), \
                  patch.object(ci, 'snapshot', return_value=value), \
                  patch.object(ci, 'package_info', return_value={
@@ -95,6 +100,34 @@ class PipelineTests(unittest.TestCase):
                     ci.verify(revision)
             self.assertFalse(Path('cache-proof.json').exists())
             self.assertEqual(len(evaluations), 2)
+
+    def test_reference_closures_are_fetched_with_compilation_disabled(self):
+        revision = 'a' * 40
+        value = {'sha256': 'hash', 'mode': 'git', 'sourceDigest': 'sources'}
+        result = {'systemDerivation': '/nix/store/system.drv',
+                  'systemPath': '/nix/store/' + 'a' * 32 + '-system',
+                  'applications': {'easyeffects': '/nix/store/native-easyeffects'}}
+        systems = {name: {'revision': rev, 'sha256': 'hash', 'closurePaths': 2, **result}
+                   for name, rev in [('nixos-unstable', 'b' * 40), ('regression', ci.REGRESSION_HOST)]}
+        with tempfile.TemporaryDirectory() as directory, contextlib.chdir(directory):
+            Path('reference-systems.json').write_text(json.dumps({
+                'sourceDigest': 'sources', 'clientDigest': 'client', 'systems': systems}))
+            with patch.dict(os.environ, GITHUB_SHA='c' * 40), \
+                 patch.object(ci, 'snapshot', return_value=value), \
+                 patch.object(ci, 'package_info', return_value={
+                     'plasma-workspace': {'version': '6.8.80', 'preferLocalBuild': False}}), \
+                 patch.object(ci, 'client_digest', return_value='client'), \
+                 patch.object(ci, 'options', return_value=[]), \
+                 patch.object(ci, 'integration_check', return_value=result), \
+                 patch.object(ci, 'run', side_effect=lambda *args, **kwargs:
+                              '/path/one /path/two' if '-qR' in args else '') as run:
+                ci.verify(revision)
+            downloads = [c.args for c in run.call_args_list if c.args[:2] == ('nix-store', '--realise')]
+            self.assertEqual(len(downloads), 2)
+            for args in downloads:
+                self.assertEqual(args[args.index('--max-jobs') + 1], '0')
+                self.assertEqual(args[args.index('builders') + 1], '')
+            self.assertEqual(json.loads(Path('cache-proof.json').read_text())['referenceSystems'], systems)
 
     def test_resume_preserves_sources_without_polling_new_heads(self):
         revision = 'a' * 40

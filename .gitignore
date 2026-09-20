@@ -2,4 +2,5 @@ __pycache__/
 built-output.txt
 snapshot.json
 cache-proof.json
+reference-systems.json
 result

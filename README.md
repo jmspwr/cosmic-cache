@@ -10,8 +10,9 @@ Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, publish
 
 Each workflow polls hourly and builds only changed snapshots. It advances its verified branch
 only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
-evaluation checks the module's assertions and exact package paths. Plasma also evaluates the full
-system derivation against its packaging tree and a separate current `nixos-unstable` host. Cachix retention protects the
+evaluation checks the module's assertions and exact package paths. Plasma also builds complete
+public reference systems, including Gear, Qt5 integration and EasyEffects, and fetches their entire
+closures on a fresh runner without compilation. Cachix retention protects the
 latest publication for each desktop. A failure in one desktop does not hold back the other.
 
 ## Install
@@ -61,7 +62,9 @@ your configuration uses one. COSMIC requires flake support internally even for a
 - [`plasma/`](plasma): resolves exact KDE Invent commits and hashes, overrides the complete KDE
   package scope's sources, and groups actual Plasma dependencies into five parallel build waves.
   The consumer imports the matching Plasma NixOS module alongside those packages, avoiding
-  obsolete package references in the host's Plasma module.
+  obsolete package references in the host's Plasma module. Git packages are passed only to that
+  module: the host's `pkgs.kdePackages`, Gear apps, Qt5 variants and EasyEffects keep their channel
+  identities. Enabling this cache does not redirect unrelated applications to Git Breeze.
   Every non-debug output of every required Plasma package is uploaded, verified and retained,
   including headers and session files. Separate debug symbols and their source trees are not
   explicitly uploaded. Manual `beta` mode uses the packaging tree's release tarballs.
@@ -84,7 +87,8 @@ symbols can still be built locally when needed, using the unchanged package deri
 
 Only standard public GitHub runners are used. Desktop compilation has no Cachix write token;
 only upload and retention steps receive it. Pull requests run checks without cache credentials.
-No personal NixOS configurations, whole systems, proprietary apps or secrets are uploaded.
+Plasma's complete-system fixtures use only the public profile in this repository. No personal
+NixOS configurations, proprietary apps or secrets are uploaded.
 
 If a Plasma run is interrupted, manually dispatch its workflow with `resume_run` set to the
 previous run ID. It downloads that run's snapshot artifact and preserves its exact source

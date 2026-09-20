@@ -17,10 +17,14 @@ Builds current Plasma Git sources for x86_64-linux and publishes verified binari
    Derive their Plasma dependencies from Nix's actual derivation closures. Divide the graph into
    five waves, grouping dependent packages onto the same runner within a wave. Independent batches
    build in parallel; later waves download non-debug outputs uploaded by earlier waves.
-4. On a fresh runner, download **every non-debug output of every required Plasma package**, with local and
-   remote compilation disabled. Evaluate the full NixOS system derivation with both the packaging
-   tree and a separate current `nixos-unstable` host, including assertions and exact selected output paths.
-5. Protect those outputs and their runtime closures with a Cachix retention root, keeping one
+4. Build complete public reference systems on current `nixos-unstable` and the host revision from
+   the EasyEffects regression. These include the default Gear apps, Qt5 integration and EasyEffects.
+   Assert that application store paths match the unmodified host package set, and upload complete
+   reference runtime closures. Compilation runs with one build job and two cores, without cache credentials.
+5. On a fresh runner, download **every non-debug output of every required Plasma package** and both
+   complete reference closures with local and remote compilation disabled. Independently evaluate
+   their full systems and application identities, and also evaluate the packaging-tree host.
+6. Protect those outputs and the reference closures with a Cachix retention root, keeping one
    revision. Then advance `plasma-cache` with a normal fast-forward commit containing the source snapshot,
    client code and `cache-proof.json`.
 
@@ -53,12 +57,15 @@ After the first successful publication, add this to your existing NixOS configur
 imports = [ "${fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cache.tar.gz"}/plasma/default.nix" ];
 ```
 
-Keep `services.desktopManager.plasma6.enable = true` in your configuration. The module supplies a
-coherent `kdePackages` scope and its matching Plasma NixOS module, checks the packages against the
+Keep `services.desktopManager.plasma6.enable = true` in your configuration. The module passes the
+cached Git components directly to its matching Plasma NixOS module, checks the packages against the
 published proof, and configures the public cache. It replaces the host's Plasma module so older
 package lists cannot request removed components such as `kwin-x11` or `kgamma`.
-It leaves the rest of your system on your own Nixpkgs channel. Custom overlays that replace the
-verified Plasma outputs fail an assertion.
+It does **not** overlay the host's `pkgs.kdePackages`. Gear applications, EasyEffects and the Qt5
+Breeze/integration variants keep their ordinary channel derivations, rather than rebuilding against
+Git Breeze. The public reference profile checks their identities and complete runtime coverage.
+Conflicting explicitly installed Plasma components fail an assertion. Additional personal apps
+still follow your channel's cache availability, and your own system assembly still runs locally.
 
 For the **first** rebuild, give the running Nix daemon the cache settings explicitly; the module's
 settings only take effect after activation:
@@ -76,7 +83,8 @@ may reuse a recently fetched channel until its tarball TTL expires.
 
 Only standard public GitHub runners are used. The Cachix write token is available only to upload
 and retention steps. Pull requests run regression and syntax checks without cache credentials.
-No personal NixOS system, configuration or proprietary applications are uploaded.
+Only the repository's public reference systems are uploaded; no personal NixOS configuration,
+system or proprietary applications are uploaded.
 
 ## Checks
 
