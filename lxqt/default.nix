@@ -56,8 +56,9 @@ in
       };
     }
     (lib.mkIf config.services.xserver.desktopManager.lxqt.enable {
+      powerManagement.enable = lib.mkDefault true;
       programs.labwc.enable = lib.mkDefault true;
-      programs.swaylock.enable = lib.mkDefault true;
+      security.pam.services.swaylock = { };
       services.displayManager.sessionPackages = [ packages.scope.lxqt-wayland-session ];
       xdg.portal = {
         wlr.enable = lib.mkDefault true;
@@ -66,7 +67,10 @@ in
           "org.freedesktop.impl.portal.Screenshot" = lib.mkDefault [ "wlr" ];
         };
       };
-      environment.systemPackages = [ pkgs.slurp ];
+      environment.systemPackages = [
+        pkgs.slurp
+        pkgs.swaylock
+      ];
     })
   ];
 }

@@ -4,20 +4,17 @@ from __future__ import annotations
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 import configparser
-import datetime
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
-import subprocess
-import sys
 import urllib.parse
 import urllib.request
 
 from scripts import cache as shared
 from scripts import desktop as lifecycle
-from scripts.cache import dump, options, run
+from scripts.cache import dump, run
 
 PR = 559510
 PROJECTS = ["gjs", "gnome-control-center", "gnome-session", "gnome-settings-daemon", "gnome-shell", "gsettings-desktop-schemas", "mutter", "xdg-desktop-portal-gnome"]
