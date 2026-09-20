@@ -20,8 +20,9 @@ from scripts.cache import cache, dump, options, run
 
 PACKAGING_GIT = "https://github.com/amozeo/nixos-cosmic.git"
 SOURCE_BRANCH = "source"
-SOURCE_REPO = os.environ.get("GITHUB_REPOSITORY", "jmspwr/desktop-cache")
+SOURCE_REPO = os.environ.get("GITHUB_REPOSITORY", "jmspwr/cosmic-cache")
 CLIENT_FILES = [
+    ".github/workflows/check.yml",
     ".github/workflows/cosmic.yml",
     "cache.json",
     "cosmic/ci.py",
@@ -31,8 +32,9 @@ CLIENT_FILES = [
     "default.nix",
     "packages.nix",
     "scripts/cache.py",
-    "scripts/storage.py", "scripts/integration.py", "checks/combined.nix",
-    ".github/workflows/desktops.yml",
+    "scripts/storage.py",
+    "cosmic/check.nix",
+    "cosmic/profile.nix",
 ]
 
 
@@ -45,7 +47,16 @@ def published() -> dict:
 
 
 def publish() -> None:
-    shared.publish("cosmic-cache")
+    proof = json.loads(Path("cache-proof.json").read_text())
+    validate_proof(proof, evaluate=False)
+    if not proof.get("storage") or not proof.get("retentionRoot"):
+        raise RuntimeError("Missing successful retention/storage evidence")
+    current = {k: v for k, v in published().items() if k not in {"snapshot", "publicationRevision"}}
+    if current != proof:
+        shared.publish("cosmic-cache", env=github_push_env(os.environ["GITHUB_TOKEN"]),
+                       expected_parent=proof["publicationParent"])
+    # Keep both snapshots until the advertised branch has advanced successfully.
+    pin_root(proof["retentionRoot"])
 
 
 def snapshot(revision: str) -> None:
@@ -144,8 +155,15 @@ def source_metadata(revision: str) -> dict | None:
         raise
 
 
+def build_env() -> dict[str, str]:
+    # The updater is upstream executable code; it does not need publication secrets.
+    return {k: v for k, v in os.environ.items()
+            if k not in {"GITHUB_TOKEN", "GH_TOKEN", "CACHIX_AUTH_TOKEN"}
+            and not k.startswith(("GIT_CONFIG_", "ACTIONS_RUNTIME_", "ACTIONS_ID_TOKEN_"))}
+
+
 def github_push_env(token: str) -> dict[str, str]:
-    env = os.environ.copy()
+    env = build_env()
     auth = base64.b64encode(f"x-access-token:{token}".encode()).decode()
     env["GIT_CONFIG_COUNT"] = "1"
     env["GIT_CONFIG_KEY_0"] = "http.https://github.com/.extraheader"
@@ -156,9 +174,6 @@ def github_push_env(token: str) -> dict[str, str]:
 def refresh_source() -> tuple[str, bool]:
     previous = public_branch_head(SOURCE_BRANCH)
     previous_meta = source_metadata(previous)
-    token = os.environ.get("GITHUB_TOKEN")
-    if not token:
-        raise RuntimeError("GITHUB_TOKEN is required to publish source snapshots")
 
     with tempfile.TemporaryDirectory(prefix="cosmic-source-") as tmp:
         run(
@@ -185,11 +200,11 @@ def refresh_source() -> tuple[str, bool]:
         )
         update_path = run(
             "nix", "build", ".#update", "--no-link", "--print-out-paths",
-            cwd=tmp, env=os.environ.copy(),
+            cwd=tmp, env=build_env(),
         ).splitlines()[-1]
         run(
             f"{update_path}/bin/cosmic-unstable-update",
-            capture=False, cwd=tmp, env=os.environ.copy(),
+            capture=False, cwd=tmp, env=build_env(),
         )
 
         pinned_after = component_sources(tmp)
@@ -243,27 +258,48 @@ def refresh_source() -> tuple[str, bool]:
             "git", "commit-tree", tree, *parent_args,
             "-m", "Refresh COSMIC component HEADs", cwd=tmp,
         )
-        run(
-            "git", "push", f"https://github.com/{SOURCE_REPO}.git",
-            f"{revision}:refs/heads/{SOURCE_BRANCH}", cwd=tmp,
-            env=github_push_env(token), capture=False,
-        )
-        print(f"Published source snapshot {revision} from packaging base {base}")
+        run("git", "update-ref", "refs/heads/snapshot", revision, cwd=tmp)
+        run("git", "bundle", "create", str(shared.ROOT / "source.bundle"),
+            "refs/heads/snapshot", cwd=tmp)
+        print(f"Prepared source snapshot {revision} from packaging base {base}")
         return revision, True
+
+
+def update_source() -> None:
+    revision, changed = refresh_source()
+    with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+        out.write(f"revision={revision}\nchanged={str(changed).lower()}\n")
+
+
+def publish_source(revision: str) -> None:
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("Invalid source revision")
+    with tempfile.TemporaryDirectory(prefix="cosmic-publish-") as tmp:
+        run("git", "init", tmp)
+        run("git", "fetch", str(shared.ROOT / "source.bundle"), "refs/heads/snapshot", cwd=tmp)
+        if run("git", "rev-parse", "FETCH_HEAD", cwd=tmp) != revision:
+            raise RuntimeError("Source bundle does not match the resolved revision")
+        files = run("git", "ls-tree", "--name-only", revision, cwd=tmp).splitlines()
+        if ".github" in files or ".cosmic-cache-source.json" not in files:
+            raise RuntimeError("Invalid source snapshot contents")
+        run("git", "push", f"https://github.com/{SOURCE_REPO}.git",
+            f"{revision}:refs/heads/{SOURCE_BRANCH}", cwd=tmp,
+            env=github_push_env(os.environ["GITHUB_TOKEN"]), capture=False)
 
 
 def package_info() -> dict:
     return json.loads(
         run(
             "nix", "eval", "--impure", "--json", "--file", "packages.nix", "--apply",
-            'builtins.mapAttrs (name: p: { path = toString p.out; version = p.version or "unknown"; preferLocalBuild = p.preferLocalBuild or false; })',
+            'builtins.mapAttrs (name: p: { path = toString p.out; version = p.version or "unknown"; preferLocalBuild = p.preferLocalBuild or false; allowSubstitutes = p.allowSubstitutes or true; })',
         )
     )
 
 
-def resolve() -> None:
+def resolve(revision: str) -> None:
     cache()
-    revision, source_changed = refresh_source()
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise ValueError("Invalid source revision")
     proof = published()
     build_needed = (
         proof.get("revision") != revision
@@ -286,7 +322,6 @@ def resolve() -> None:
         out.write("build=" + ("true" if build_needed else "false") + "\n")
     print(
         f"Resolved {len(names)} package outputs at {revision}; "
-        f"source_changed={str(source_changed).lower()} "
         f"build={str(build_needed).lower()}"
     )
 
@@ -305,102 +340,177 @@ def build(name: str, revision: str) -> None:
     print(root)
 
 
-def push() -> None:
-    root = Path("built-output.txt").read_text().strip()
+def push_path(root: str) -> None:
+    if not re.fullmatch(r"/nix/store/[0-9a-z]{32}-[^/\s]+", root):
+        raise ValueError("Invalid runtime store path")
     if not os.environ.get("CACHIX_AUTH_TOKEN"):
         raise RuntimeError("CACHIX_AUTH_TOKEN is not configured")
+    run("nix", "run", "github:NixOS/nixpkgs/nixos-unstable#cachix", "--", "push",
+        cache()["name"], *shared.PUSH_OPTIONS, root, capture=False)
+
+
+def push() -> None:
+    push_path(Path("built-output.txt").read_text().strip())
+
+
+def proof_for(revision: str) -> dict:
+    snapshot(revision)
+    info = package_info()
+    if any(p["preferLocalBuild"] not in (False, "", "0", None)
+           or p["allowSubstitutes"] in (False, "", "0", None) for p in info.values()):
+        raise RuntimeError("A source package prevents normal substitution; refuse publication")
+    return {
+        "schema": 3,
+        "revision": revision,
+        "clientDigest": client_digest(),
+        "builderRevision": os.environ["GITHUB_SHA"],
+        "packages": info,
+    }
+
+
+def fetch_packages() -> None:
     run(
-        "nix", "run", "nixpkgs#cachix", "--", "push",
-        cache()["name"], *shared.PUSH_OPTIONS, root, capture=False,
+        "nix-build", "--expr",
+        "builtins.map (p: p.out) (builtins.attrValues (import ./packages.nix))",
+        "--no-out-link", "--max-jobs", "0", "--option", "builders", "",
+        *options(), capture=False,
     )
+
+
+def reference(host: dict) -> dict:
+    if not re.fullmatch(r"[0-9a-f]{40}", host["revision"]):
+        raise ValueError("Invalid reference Nixpkgs revision")
+    expression = (
+        '(import ./check.nix) { host = fetchTarball { url = '
+        + json.dumps("https://github.com/NixOS/nixpkgs/archive/" + host["revision"] + ".tar.gz")
+        + '; sha256 = ' + json.dumps(host["sha256"]) + '; }; }'
+    )
+    return json.loads(run("nix", "eval", "--impure", "--json", "--expr", expression))
+
+
+def build_reference(revision: str) -> None:
+    proof = proof_for(revision)
+    dump("cache-proof.json", proof)
+    fetch_packages()
+    sha = run("git", "ls-remote", "--exit-code", "https://github.com/NixOS/nixpkgs.git", "refs/heads/nixos-unstable").split()[0]
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        raise ValueError("Invalid nixos-unstable revision")
+    host = {"revision": sha, "sha256": run("nix-prefetch-url", "--unpack", "https://github.com/NixOS/nixpkgs/archive/" + sha + ".tar.gz")}
+    system = reference(host)
+    run("nix-build", system["systemDerivation"], "--no-out-link", "--max-jobs", "1", "--cores", "2", *options(), capture=False)
+    system["closurePaths"] = len(run("nix-store", "-qR", system["systemPath"]).splitlines())
+    dump("reference-systems.json", {
+        "revision": revision, "clientDigest": client_digest(),
+        "builderRevision": os.environ["GITHUB_SHA"],
+        "systems": {"nixos-unstable": {**host, **system}},
+    })
+
+
+def push_reference() -> None:
+    data = json.loads(Path("reference-systems.json").read_text())
+    for system in data["systems"].values():
+        push_path(system["systemPath"])
+
+
+def validate_proof(proof: dict, evaluate: bool = True) -> None:
+    snap = json.loads(Path("snapshot.json").read_text())
+    if (proof.get("schema") != 3 or proof.get("clientDigest") != client_digest()
+            or proof.get("builderRevision") != os.environ.get("GITHUB_SHA")
+            or snap != {"schema": 2, "url": f"github:{SOURCE_REPO}/{proof['revision']}"}
+            or not proof.get("verifiedAt") or not proof.get("referenceSystems")
+            or not proof.get("packages")
+            or (evaluate and proof["packages"] != package_info())):
+        raise RuntimeError("Stale or incomplete cache proof; refuse publication")
 
 
 def verify(revision: str) -> None:
-    snapshot(revision)
-    info = package_info()
-    if any(
-        p["preferLocalBuild"] not in (False, "", "0", None)
-        for p in info.values()
-    ):
-        raise RuntimeError("A source package forces local builds; refuse publication")
-
-    expression = "builtins.map (p: p.out) (builtins.attrValues (import ./packages.nix))"
-    run(
-        "nix-build", "--expr", expression, "--no-out-link", "--max-jobs", "0",
-        "--option", "builders", "", *options(), capture=False,
-    )
-
-    dump(
-        "cache-proof.json",
-        {
-            "schema": 2,
-            "verifiedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "revision": revision,
-            "clientDigest": client_digest(),
-            "builderRevision": os.environ["GITHUB_SHA"],
-            "method": (
-                "fresh-job nix-build: max-jobs=0, no remote builders; "
-                "exact module-output equality"
-            ),
-            "packages": info,
-        },
-    )
-    expression = (
-        'let '
-        's = builtins.fromJSON (builtins.readFile ./snapshot.json); '
-        'u = builtins.getFlake s.url; '
-        'n = u.inputs.nixpkgs.lib.nixosSystem { '
-        'system = "x86_64-linux"; '
-        'modules = [ ./default.nix ({ ... }: { '
-        'boot.isContainer = true; '
-        'services.desktopManager.cosmic.enable = true; '
-        'services.displayManager.cosmic-greeter.enable = true; '
-        'system.stateVersion = "25.11"; '
-        '}) ]; '
-        '}; '
-        'p = import ./packages.nix; '
-        'in builtins.all (a: a.assertion) n.config.assertions && '
-        'builtins.all (name: n.pkgs.${name}.outPath == p.${name}.outPath) '
-        '(builtins.attrNames p)'
-    )
+    Path("cache-proof.json").unlink(missing_ok=True)
     try:
-        if run("nix", "eval", "--impure", "--json", "--expr", expression) != "true":
-            raise RuntimeError("NixOS integration assertions or output identity failed")
+        proof = proof_for(revision)
+        fetch_packages()
+        data = json.loads(Path("reference-systems.json").read_text())
+        if any(data.get(k) != proof[k] for k in ("revision", "clientDigest", "builderRevision")):
+            raise RuntimeError("Reference system provenance does not match this build")
+        if set(data["systems"]) != {"nixos-unstable"}:
+            raise RuntimeError("Missing required reference system")
+        dump("cache-proof.json", proof)
+        for host in data["systems"].values():
+            result = reference(host)
+            if any(result[k] != host[k] for k in result):
+                raise RuntimeError("Reference system output changed during verification")
+            run("nix-store", "--realise", host["systemPath"], "--option", "max-jobs", "0",
+                "--option", "builders", "", *options(), capture=False)
+            if len(run("nix-store", "-qR", host["systemPath"]).splitlines()) != host["closurePaths"]:
+                raise RuntimeError("Reference system closure is incomplete")
+        proof.update(
+            verifiedAt=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            method="Fresh runner: complete runtime and reference closures fetched with all builders disabled; exact module/package/system identity",
+            referenceSystems=data["systems"],
+        )
+        dump("cache-proof.json", proof)
+        validate_proof(proof)
     except Exception:
-        Path("cache-proof.json").unlink()
+        Path("cache-proof.json").unlink(missing_ok=True)
         raise
+    print("COSMIC runtime and complete NixOS reference system verified without compilation")
 
-    print("Cached package outputs and module-output identity verified")
+
+def retention_root(previous_roots: list[str]) -> str:
+    if previous_roots:
+        run("nix-store", "--realise", *previous_roots, "--option", "max-jobs", "0",
+            "--option", "builders", "", *options(), capture=False)
+    root = run("nix-build", "retention-root.nix", "--no-out-link",
+               "--arg", "previousRoots", "builtins.fromJSON " + json.dumps(json.dumps(previous_roots)),
+               *options())
+    return root
+
+
+def pin_root(root: str) -> None:
+    if not re.fullmatch(r"/nix/store/[0-9a-z]{32}-[^/\s]+", root):
+        raise ValueError("Invalid retention root")
+    run("nix-store", "--realise", root, "--option", "max-jobs", "0",
+        "--option", "builders", "", *options(), capture=False)
+    push_path(root)
+    run("nix", "run", "github:NixOS/nixpkgs/nixos-unstable#cachix", "--", "pin",
+        cache()["name"], "cosmic-x86_64-linux", root, "--keep-revisions", "1", capture=False)
+
+
+def pin(previous_roots: list[str]) -> None:
+    pin_root(retention_root(previous_roots))
 
 
 def retain() -> None:
-    from scripts.storage import check
-    report = check("cosmic")
+    from scripts.storage import check, roots
     proof = json.loads(Path("cache-proof.json").read_text())
+    validate_proof(proof)
+    previous = published()
+    report = check(candidate=True, published=previous)
+    current_root = retention_root([])
+    push_path(current_root)
+    pin(sorted(roots(previous)) if previous else [])
+    proof["retentionRoot"] = current_root
+    proof["publicationParent"] = previous.get("publicationRevision", "")
     proof["storage"] = {k: v for k, v in report.items() if k != "paths"}
     dump("cache-proof.json", proof)
-    root = run("nix-build", "retention-root.nix", "--no-out-link", *options())
-    c = cache()["name"]
-    run("nix", "run", "nixpkgs#cachix", "--", "push", c, *shared.PUSH_OPTIONS, root, capture=False)
-    run(
-        "nix", "run", "nixpkgs#cachix", "--", "pin", c,
-        "cosmic-x86_64-linux", root, "--keep-revisions", "1", capture=False,
-    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command",
-        choices=["resolve", "build", "push", "verify", "retain", "publish"],
+        choices=["update-source", "publish-source", "resolve", "build", "push", "reference", "push-reference", "verify", "retain", "publish"],
     )
     parser.add_argument("--revision", default=os.environ.get("SOURCE_REV", ""))
     parser.add_argument("--package", default=os.environ.get("PACKAGE", ""))
     args = parser.parse_args()
     {
-        "resolve": resolve,
+        "update-source": update_source,
+        "publish-source": lambda: publish_source(args.revision),
+        "resolve": lambda: resolve(args.revision),
         "build": lambda: build(args.package, args.revision),
         "push": push,
+        "reference": lambda: build_reference(args.revision),
+        "push-reference": push_reference,
         "verify": lambda: verify(args.revision),
         "retain": retain,
         "publish": publish,

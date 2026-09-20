@@ -1,4 +1,4 @@
-name: Measure desktop runtime storage
+name: Measure COSMIC runtime storage
 on:
   workflow_dispatch:
   push:

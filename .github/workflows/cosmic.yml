@@ -1,21 +1,68 @@
 name: Build and verify COSMIC cache
 on:
-  workflow_call:
-    secrets:
-      CACHIX_AUTH_TOKEN:
-        required: true
+  workflow_dispatch:
+  schedule:
+    - cron: '7 * * * *'
+  push:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
   group: cosmic-cache
   cancel-in-progress: false
 jobs:
-  prepare:
+  check:
+    uses: ./.github/workflows/check.yml
+  source:
+    needs: check
     if: github.event.repository.visibility == 'public'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    outputs:
+      revision: ${{ steps.update.outputs.revision }}
+      changed: ${{ steps.update.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            always-allow-substitutes = false
+      - id: update
+        run: python3 -m cosmic.ci update-source
+      - uses: actions/upload-artifact@v4
+        if: steps.update.outputs.changed == 'true'
+        with:
+          name: source
+          path: source.bundle
+          if-no-files-found: error
+          retention-days: 3
+  source-publish:
+    needs: source
+    if: needs.source.outputs.changed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: source
+      - name: Publish immutable source without executing upstream code
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOURCE_REV: ${{ needs.source.outputs.revision }}
+        run: python3 -m cosmic.ci publish-source
+  prepare:
+    needs: [source, source-publish]
+    if: ${{ !cancelled() && needs.source.result == 'success' && (needs.source-publish.result == 'success' || needs.source-publish.result == 'skipped') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     outputs:
       revision: ${{ steps.resolve.outputs.revision }}
       matrix: ${{ steps.resolve.outputs.matrix }}
@@ -28,9 +75,10 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+            always-allow-substitutes = false
       - id: resolve
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE_REV: ${{ needs.source.outputs.revision }}
         run: python3 -m cosmic.ci resolve
   build:
     if: needs.prepare.outputs.build == 'true'
@@ -52,6 +100,7 @@ jobs:
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+            always-allow-substitutes = false
             max-jobs = 1
             cores = 2
       - name: Build one COSMIC output
@@ -60,28 +109,89 @@ jobs:
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: python3 -m cosmic.ci push
-  publish:
+  reference:
     if: needs.prepare.outputs.build == 'true'
     needs: [prepare, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
-    permissions:
-      contents: write
     env:
       SOURCE_REV: ${{ needs.prepare.outputs.revision }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
+            always-allow-substitutes = false
+      - name: Build complete COSMIC reference system
+        run: python3 -m cosmic.ci reference
+      - name: Upload public reference closure
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: python3 -m cosmic.ci push-reference
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reference-systems
+          path: cosmic/reference-systems.json
+          if-no-files-found: error
+          retention-days: 3
+  verify:
+    if: needs.prepare.outputs.build == 'true'
+    needs: [prepare, build, reference]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      SOURCE_REV: ${{ needs.prepare.outputs.revision }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: reference-systems
+          path: cosmic
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            always-allow-substitutes = false
       - name: Verify downloads in a fresh runner and matching NixOS outputs
         run: python3 -m cosmic.ci verify
-      - name: Verify coexistence with published sibling desktops
-        run: python3 -m scripts.integration cosmic
       - name: Protect completed snapshots in Cachix
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         run: python3 -m cosmic.ci retain
-      - name: Advance cosmic-cache without force-pushing
+      - uses: actions/upload-artifact@v4
+        with:
+          name: publication
+          path: |
+            cosmic/snapshot.json
+            cosmic/cache-proof.json
+          if-no-files-found: error
+          retention-days: 3
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: publication
+          path: cosmic
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            always-allow-substitutes = false
+      - name: Publish verified snapshot and release previous retention
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 -m cosmic.ci publish

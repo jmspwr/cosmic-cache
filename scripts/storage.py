@@ -7,39 +7,16 @@ import json
 from pathlib import Path
 import re
 import subprocess
-import urllib.error
-import urllib.request
 
-from scripts.cache import ROOT, cache, dump
+from scripts.cache import ROOT, cache, dump, published as published_proof
 
-DESKTOPS = ("cosmic", "plasma", "gnome", "lxqt")
 GIB = 1024 ** 3
-
-
-def get(url: str) -> str | None:
-    try:
-        with urllib.request.urlopen(url, timeout=60) as response:
-            return response.read().decode()
-    except urllib.error.HTTPError as exc:
-        if exc.code == 404:
-            return None
-        raise
 
 
 def roots(proof: dict) -> set[str]:
     return set(proof.get("runtimePaths", [p["path"] for p in proof["packages"].values()])) | {
         s["systemPath"] for s in proof.get("referenceSystems", {}).values()
     }
-
-
-def published() -> dict[str, set[str]]:
-    result = {}
-    for desktop in DESKTOPS:
-        data = get(f"https://raw.githubusercontent.com/jmspwr/desktop-cache/{desktop}-cache/{desktop}/cache-proof.json")
-        if data is not None:
-            result[desktop] = roots(json.loads(data))
-    return result
-
 
 
 def inventory(groups: dict[str, set[str]]) -> dict:
@@ -92,25 +69,27 @@ def inventory(groups: dict[str, set[str]]) -> dict:
         "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
         "compressedBytes": sum(charged.values()),
         "paths": charged,
-        "desktops": {n: {"compressedBytes": sum(entries[p]["bytes"] for p in c), "cachePaths": sum(entries[p]["bytes"] > 0 for p in c)} for n, c in closures.items()},
+        "snapshots": {n: {"compressedBytes": sum(entries[p]["bytes"] for p in c), "cachePaths": sum(entries[p]["bytes"] > 0 for p in c)} for n, c in closures.items()},
     }
 
 
-def check(desktop: str | None = None) -> dict:
-    groups = published()
-    previous = groups.get(desktop, set())
-    if desktop:
-        groups[desktop] = roots(json.loads((ROOT / desktop / "cache-proof.json").read_text()))
-    report = inventory(groups)
+def check(candidate: bool = False, published: dict | None = None) -> dict:
+    if published is None:
+        published = published_proof("cosmic-cache", "cosmic")
+    previous = roots(published) if published else set()
+    current = roots(json.loads((ROOT / "cosmic/cache-proof.json").read_text())) if candidate else previous
+    if not current:
+        raise RuntimeError("No COSMIC runtime publication to measure")
+    report = inventory({"current": current})
     report["runtimeBudgetBytes"] = 4 * GIB
     if report["compressedBytes"] > report["runtimeBudgetBytes"]:
-        raise RuntimeError("Current desktop runtime union exceeds the 4 GiB budget; refuse publication")
-    if desktop and previous:
-        overlap = inventory({**groups, "previous-" + desktop: previous})
+        raise RuntimeError("COSMIC runtime exceeds the 4 GiB budget; refuse publication")
+    if candidate and previous:
+        overlap = inventory({"current": current, "previous": previous})
         report["updateOverlapBytes"] = overlap["compressedBytes"]
         if overlap["compressedBytes"] > 4.75 * GIB:
             raise RuntimeError("Old and new runtime snapshots exceed the update headroom budget")
-    report["scope"] = "Published runtime closures, not total account usage or obsolete unpinned data"
+    report["scope"] = "COSMIC runtime closures, not total account usage or obsolete unpinned data"
     dump(ROOT / "storage-report.json", report)
     print(json.dumps({k: v for k, v in report.items() if k != "paths"}, indent=2))
     return report
@@ -118,5 +97,5 @@ def check(desktop: str | None = None) -> dict:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--desktop", choices=DESKTOPS)
-    check(parser.parse_args().desktop)
+    parser.add_argument("--candidate", action="store_true")
+    check(parser.parse_args().candidate)

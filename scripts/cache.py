@@ -1,4 +1,4 @@
-"""Shared cache transport and atomic publication for the desktop builders."""
+"""Cache transport and fast-forward publication for COSMIC."""
 from __future__ import annotations
 
 import hashlib
@@ -68,22 +68,27 @@ def published(branch: str, desktop: str) -> dict:
     prefix = f"{desktop}/" if f"{desktop}/cache-proof.json" in files else ""
     proof = json.loads(run("git", "show", "FETCH_HEAD:" + prefix + "cache-proof.json"))
     proof["snapshot"] = json.loads(run("git", "show", "FETCH_HEAD:" + prefix + "snapshot.json"))
+    proof["publicationRevision"] = run("git", "rev-parse", "FETCH_HEAD")
     return proof
 
 
-def publish(branch: str) -> None:
+def publish(branch: str, env: dict[str, str] | None = None, expected_parent: str | None = None) -> None:
     for path in ("snapshot.json", "cache-proof.json"):
         if not Path(path).is_file():
             raise RuntimeError(f"Missing publication evidence: {path}")
     ref = f"refs/heads/{branch}"
     parent = run("git", "rev-parse", "HEAD")
+    previous = ""
     if run("git", "ls-remote", "--heads", "origin", ref):
         run("git", "fetch", "--no-tags", "origin", ref, capture=False)
         parent = run("git", "rev-parse", "FETCH_HEAD")
+        previous = parent
+    if expected_parent is not None and previous != expected_parent:
+        raise RuntimeError("Publication branch changed after retention; retry safely")
     run("git", "config", "user.name", "github-actions[bot]")
     run("git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com")
     run("git", "add", "--force", "snapshot.json", "cache-proof.json")
     tree = run("git", "write-tree")
     commit = run("git", "commit-tree", tree, "-p", parent, "-m", f"Publish verified {branch} snapshot")
-    run("git", "push", "origin", f"{commit}:{ref}", capture=False)
+    run("git", "push", "origin", f"{commit}:{ref}", env=env, capture=False)
     print(f"Published {branch}: {commit}")

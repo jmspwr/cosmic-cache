@@ -38,8 +38,12 @@ class PublicationTests(unittest.TestCase):
                 self.assertEqual(ci.published("cosmic-cache", "cosmic")['revision'], 'b' * 40)
                 self.assertIn('parent ' + first, ci.run('git', 'cat-file', '-p', 'FETCH_HEAD'))
                 self.assertIn('snapshot.json', ci.run('git', 'ls-tree', '--name-only', 'FETCH_HEAD'))
+                current = ci.run('git', 'rev-parse', 'FETCH_HEAD')
+                with self.assertRaisesRegex(RuntimeError, 'changed after retention'):
+                    ci.publish('cosmic-cache', expected_parent=first)
+                self.assertEqual(current, ci.run('git', 'ls-remote', 'origin', 'refs/heads/cosmic-cache').split()[0])
 
-    def test_publication_is_readable_from_each_desktop_subdirectory(self):
+    def test_publication_is_readable_from_cosmic_subdirectory(self):
         with tempfile.TemporaryDirectory() as directory:
             remote = Path(directory) / 'remote.git'
             work = Path(directory) / 'work'
@@ -49,12 +53,12 @@ class PublicationTests(unittest.TestCase):
                 ci.run('git', 'config', 'user.name', 'Test')
                 ci.run('git', 'config', 'user.email', 'test@example.invalid')
                 Path('.gitignore').write_text('snapshot.json\ncache-proof.json\n')
-                for desktop in ['cosmic', 'plasma']:
+                for desktop in ['cosmic']:
                     Path(desktop).mkdir()
                     Path(desktop, 'default.nix').write_text('{}')
                 ci.run('git', 'add', '.')
                 ci.run('git', 'commit', '-m', 'Initial')
-                for desktop, branch in [('cosmic', 'cosmic-cache'), ('plasma', 'plasma-cache')]:
+                for desktop, branch in [('cosmic', 'cosmic-cache')]:
                     ci.run('git', 'reset', '--mixed', 'HEAD')
                     with contextlib.chdir(desktop):
                         ci.dump('snapshot.json', {'desktop': desktop})
