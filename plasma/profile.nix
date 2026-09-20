@@ -1,6 +1,7 @@
 # Representative Plasma laptop, used for both package discovery and verification.
 { pkgs, ... }:
 {
+  imports = [ ./minimal.nix ];
   environment.systemPackages = [ pkgs.easyeffects ];
   boot.isContainer = true;
   hardware.bluetooth.enable = true;

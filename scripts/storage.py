@@ -6,12 +6,13 @@ from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
 import re
+import subprocess
 import urllib.error
 import urllib.request
 
 from scripts.cache import ROOT, cache, dump
 
-DESKTOPS = ("cosmic", "plasma", "gnome")
+DESKTOPS = ("cosmic", "plasma", "gnome", "lxqt")
 GIB = 1024 ** 3
 
 
@@ -40,30 +41,33 @@ def published() -> dict[str, set[str]]:
     return result
 
 
-def parse_narinfo(text: str) -> dict:
-    fields = dict(line.split(": ", 1) for line in text.splitlines() if ": " in line)
-    return {
-        "bytes": int(fields["FileSize"]),
-        "references": {"/nix/store/" + p for p in fields.get("References", "").split()},
-    }
-
 
 def inventory(groups: dict[str, set[str]]) -> dict:
     uri = cache()["uri"]
     entries = {}
     pending = set().union(*groups.values()) if groups else set()
 
+    def remote(uri, path):
+        result = subprocess.run(
+            ["nix", "path-info", "--store", uri, "--json", path,
+             "--option", "narinfo-cache-negative-ttl", "0"],
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90,
+        )
+        if result.returncode:
+            if "is not valid" in result.stderr and "HTTP error" not in result.stderr:
+                return None
+            raise RuntimeError(result.stderr)
+        return json.loads(result.stdout)[path]
+
     def inspect(path):
         if not re.fullmatch(r"/nix/store/[0-9a-z]{32}-[^/\s]+", path):
             raise ValueError(f"Invalid store path: {path}")
-        name = Path(path).name[:32] + ".narinfo"
-        if get("https://cache.nixos.org/" + name) is not None:
-            # The official cache also supplies this path's closure.
+        if remote("https://cache.nixos.org", path) is not None:
             return path, {"bytes": 0, "references": set()}
-        data = get(uri + "/" + name)
+        data = remote(uri, path)
         if data is None:
             raise RuntimeError(f"Runtime output missing from both caches: {path}")
-        return path, parse_narinfo(data)
+        return path, {"bytes": data["downloadSize"], "references": set(data["references"])}
 
     with ThreadPoolExecutor(max_workers=16) as pool:
         while pending:

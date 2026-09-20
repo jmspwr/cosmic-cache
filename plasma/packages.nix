@@ -21,9 +21,16 @@ in
   plasma = pick snapshot.plasma;
   selected = pick snapshot.selected;
   provided = pick snapshot.needed;
-  # Debug symbols also retain source trees. Keep the derivations unchanged so
-  # existing binaries remain reusable; publish every other output for CI/users.
-  outputs = builtins.mapAttrs (_: p: map (o: p.${o}) (builtins.filter (o: o != "debug") p.outputs)) (
-    pick snapshot.needed
-  );
+  # Build helpers are transferable during CI, but only runtime outputs are retained.
+  buildOutputs = builtins.mapAttrs (
+    _: p: map (o: p.${o}) (builtins.filter (o: o != "debug") p.outputs)
+  ) (pick snapshot.needed);
+  outputs = builtins.mapAttrs (
+    _: p:
+    map (o: p.${o}) (
+      pkgs.lib.unique (
+        (p.meta.outputsToInstall or [ "out" ]) ++ pkgs.lib.optional (p ? sessions) "sessions"
+      )
+    )
+  ) (pick snapshot.needed);
 }

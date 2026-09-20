@@ -1,22 +1,22 @@
 name: Build and verify Plasma cache
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       resume_run:
         description: Previous run whose exact snapshot should be resumed (optional)
         required: false
+        type: string
       rev:
         description: nixpkgs packaging commit (Plasma Git heads are resolved separately)
         required: false
+        type: string
       mode:
         description: Plasma sources
-        type: choice
-        options: [git, beta]
+        type: string
         default: git
-  schedule:
-    - cron: '23 * * * *'
-  push:
-    branches: [main]
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: true
 permissions:
   contents: read
 concurrency:

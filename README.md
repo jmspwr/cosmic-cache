@@ -1,45 +1,53 @@
 # Desktop cache
 
-Rolling, verified **COSMIC and KDE Plasma Git builds** for x86_64-linux, published to
+Rolling, verified **COSMIC, Plasma, GNOME and LXQt Git desktops** for x86_64-linux, published to
 [jmspwr.cachix.org](https://jmspwr.cachix.org).
 
-| Desktop | Sources | Verified branch | Module |
+| Desktop | Git scope | Verified branch | Module |
 | --- | --- | --- | --- |
-| COSMIC | Component Git HEADs through `amozeo/nixos-cosmic` | `cosmic-cache` | `cosmic/default.nix` |
-| Plasma | Component Git HEADs on KDE Invent, using Nixpkgs recipes | `plasma-cache` | `plasma/default.nix` |
+| COSMIC | Desktop and its application suite | `cosmic-cache` | `cosmic/default.nix` |
+| Plasma | Desktop, settings and integration; optional application bundle excluded | `plasma-cache` | `plasma/default.nix` |
+| GNOME | Shell, Mutter, session, settings, schemas, GJS and portal; core apps disabled | `gnome-cache` | `gnome/default.nix` |
+| LXQt | Desktop, settings, libraries and portal; optional apps excluded | `lxqt-cache` | `lxqt/default.nix` |
 
-Each workflow polls hourly and builds only changed snapshots. It advances its verified branch
-only after a fresh runner downloads the promised outputs with compilation disabled. A NixOS
-evaluation checks the module's assertions and exact package paths. Plasma also builds complete
-public reference systems, including Gear, Qt5 integration and EasyEffects, and fetches their entire
-closures on a fresh runner without compilation. Cachix retention protects the
-latest publication for each desktop. A failure in one desktop does not hold back the other.
+Plasma, GNOME and LXQt use private package arguments for their NixOS modules. They do not replace the
+host's KDE/GNOME/LXQt package scopes, so ordinary applications retain their channel derivations.
+COSMIC retains its desktop and app suite. Desktop imports do not enable sessions themselves.
 
 ## Install
 
-Merge the imports for the desktops you use into your existing configuration:
+Merge the imports for the desktops you want into your existing configuration:
 
 ```nix
 imports = [
   "${builtins.fetchTarball "https://github.com/jmspwr/desktop-cache/archive/cosmic-cache.tar.gz"}/cosmic/default.nix"
   "${builtins.fetchTarball "https://github.com/jmspwr/desktop-cache/archive/plasma-cache.tar.gz"}/plasma/default.nix"
+  "${builtins.fetchTarball "https://github.com/jmspwr/desktop-cache/archive/gnome-cache.tar.gz"}/gnome/default.nix"
+  "${builtins.fetchTarball "https://github.com/jmspwr/desktop-cache/archive/lxqt-cache.tar.gz"}/lxqt/default.nix"
 ];
 nix.settings.experimental-features = [ "nix-command" "flakes" ];
-services.desktopManager.cosmic.enable = true;
-services.desktopManager.plasma6.enable = true;
+services.desktopManager = {
+  cosmic.enable = true;
+  gnome.enable = true;
+  plasma6.enable = true;
+};
+services.xserver.desktopManager.lxqt.enable = true;
 ```
 
-Preserve your other imports and settings, and keep one display manager enabled for both sessions.
-Each import requires its desktop's first successful publication.
+LXQt includes its Wayland session with channel Labwc and swaylock. On first login, choose Labwc
+in LXQt Session Settings. PCManFM-Qt remains because it draws the desktop and icons.
+Optional terminal, image viewer, archive manager and other bundled apps are excluded.
 
-Keep your desktop's `services.desktopManager` declaration in your own configuration. The modules
-supply the verified packages and public cache settings. Root `default.nix` and `packages.nix`
-remain COSMIC compatibility entry points. Update older COSMIC URLs from `cached` to `cosmic-cache`.
+Preserve your hardware, users, other imports and existing display manager. Use one display manager
+for the available sessions. Each publication branch becomes usable only after its first successful
+build; `main` intentionally lacks the generated snapshot and verification files. Each desktop must
+come from its own publication branch.
 
-For the first rebuild, make the cache available to the current Nix daemon explicitly:
+The modules add the cache URL and public signing key. No Cachix write token is needed on your
+machine. Supply the settings explicitly before they have been activated, and inspect a dry build:
 
 ```sh
-sudo nixos-rebuild switch --impure \
+sudo nixos-rebuild dry-build --impure \
   --option extra-experimental-features 'nix-command flakes' \
   --option extra-substituters https://jmspwr.cachix.org \
   --option extra-trusted-public-keys 'jmspwr.cachix.org-1:Ta+OFK/CrEpoz6PfkAuz2le3tZoTyFKshQpTwm5iccw=' \
@@ -47,61 +55,66 @@ sudo nixos-rebuild switch --impure \
   --option tarball-ttl 0
 ```
 
-After activation, the module supplies these settings. Each desktop uses its recorded dependency
-set alongside your system's own Nixpkgs. Local system assembly still happens normally; the cache
-guarantee applies to the verified desktop outputs, not every package on your machine. Nix may reuse
-a recently fetched channel tarball until its TTL expires; use `--option tarball-ttl 0`
-when rebuilding to check for a newer publication. Preserve your normal `--flake` selection if
-your configuration uses one. COSMIC requires flake support internally even for a conventional
-`configuration.nix`.
+Use `build` to finish without activating, then `switch` when ready. Preserve your normal `--flake`
+selection if applicable. COSMIC requires flake support internally even with a conventional
+`configuration.nix`. Refreshing a moving tarball adopts the latest successful publication; CI does
+not automatically update an installed machine. Native applications and local system assembly
+remain governed by the host configuration and channel.
 
-## Build design
+## Storage policy
 
-- [`cosmic/`](cosmic): follows all tracked component heads using upstream's packaging updater,
-  builds independent applications on separate runners, and retains their runtime closures.
-- [`plasma/`](plasma): resolves exact KDE Invent commits and hashes, overrides the complete KDE
-  package scope's sources, and groups actual Plasma dependencies into five parallel build waves.
-  The consumer imports the matching Plasma NixOS module alongside those packages, avoiding
-  obsolete package references in the host's Plasma module. Git packages are passed only to that
-  module: the host's `pkgs.kdePackages`, Gear apps, Qt5 variants and EasyEffects keep their channel
-  identities. Enabling this cache does not redirect unrelated applications to Git Breeze.
-  Every non-debug output of every required Plasma package is uploaded, verified and retained,
-  including headers and session files. Separate debug symbols and their source trees are not
-  explicitly uploaded. Manual `beta` mode uses the packaging tree's release tarballs.
-- [`scripts/cache.py`](scripts/cache.py): shared cache configuration, digest, transport and
-  fast-forward publication. Network errors never masquerade as an unpublished cache.
+The cache is designed for a shared **5 GiB** allowance:
 
-New pushes queue behind active builds so they cannot cancel uploads or retention midway through.
-Published snapshots record exact commits for reproducibility while the channels keep rolling.
-Git source changes can require updated packaging or patches; failed builds preserve the previous
-publication. No failed Git build silently publishes a beta instead.
+- Reuse official NixOS cache paths; Cachix skips uploading those dependencies.
+- Upload with XZ level 6 and retain only one runtime publication per desktop.
+- Exclude Plasma/GNOME/LXQt app bundles and separate debug symbols from the promised runtime set.
+- Keep GNOME/LXQt build helpers on its runner. Plasma's multi-runner build may upload non-debug
+  development outputs for later waves, but its retention root protects runtime outputs and
+  complete reference systems only. Unneeded build helpers become eligible for garbage collection.
+- Serialize all desktop pipelines through one hourly workflow, preserving completed uploads.
+- Before retention/publication, measure compressed sizes through Nix's binary-cache metadata.
+  Shared store paths count once and official-cache paths cost zero. Refuse publication above
+  4 GiB of combined current runtimes, or 4.75 GiB including the outgoing desktop snapshot.
 
-New uploads use XZ level 6 to favor storage density over compression speed. Cachix does not
-recompress already-present paths, and paths available in the official NixOS cache are skipped.
-To fit a small Cachix quota, retention keeps one successful revision per desktop. This does not
-remove local NixOS generations. Older remote binaries become eligible for garbage collection;
-they are not guaranteed for a fresh rollback download. Uploading the next revision still needs
-headroom alongside the current one. Previously uploaded debug outputs or old beta builds are not
-deleted by changing the output selection; Cachix must reclaim eligible unpinned data. Debug
-symbols can still be built locally when needed, using the unchanged package derivations.
+`storage-report.json` and each newly published proof report the measured runtime budget. This is
+not total account usage: old unpinned generations, previous debug uploads and unrelated pins can
+still occupy space. Cachix garbage-collects eligible older paths as the account reaches its limit;
+new retention settings do not instantly delete or recompress existing uploads. Local NixOS
+rollback generations are unaffected. See [Cachix garbage collection](https://docs.cachix.org/garbage-collection)
+and [pin retention](https://docs.cachix.org/pins).
 
-Only standard public GitHub runners are used. Desktop compilation has no Cachix write token;
-only upload and retention steps receive it. Pull requests run checks without cache credentials.
-Plasma's complete-system fixtures use only the public profile in this repository. No personal
-NixOS configurations, proprietary apps or secrets are uploaded.
+## Build and verification
 
-If a Plasma run is interrupted, manually dispatch its workflow with `resume_run` set to the
-previous run ID. It downloads that run's snapshot artifact and preserves its exact source
-commits/hashes while using the current builder and output policy. Leave `resume_run` empty
-for normal rolling updates. Resume requires the original artifact to remain available.
+The shared workflow polls hourly, runs on `main` pushes, and supports selecting one desktop.
+COSMIC uses `amozeo/nixos-cosmic`'s updater and verifies component HEADs. Plasma resolves KDE
+Invent HEADs with Nixpkgs recipes (PR 561955 while open); GNOME resolves GNOME GitLab HEADs
+with its integration packaging. LXQt resolves each desktop repository’s default-branch HEAD
+against nixos-unstable packaging. Sources and hashes are immutable within each build. Unchanged
+source/client snapshots skip rebuilding. A failed desktop does not stop the other desktop jobs,
+but it leaves its own previous publication in place. Plasma's explicit `beta` mode is available
+through manual dispatch; Git failures never silently fall back to it.
+
+Fresh verification runners fetch promised runtime outputs with local and remote compilation
+disabled. Plasma, GNOME and LXQt also build and fetch complete public reference systems and compare
+native application identities with an unmodified host. Their consumer modules check exact cached
+package identities. Successful evaluation/build/download checks do not establish graphical boot
+or arbitrary old-channel compatibility.
+
+Only public fixture systems are uploaded, never personal configurations or secrets. Compilation
+has no Cachix write token; upload and retention steps receive it separately. Publication uses a
+normal fast-forward update after verification and retention. For an interrupted Plasma build,
+dispatch the shared workflow with `desktop=plasma` and its old run ID in `resume_run` while the
+snapshot artifact remains available.
 
 ## Development
 
 ```sh
 python3 -m unittest discover -s tests -v
-for file in *.nix cosmic/*.nix plasma/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
+for file in *.nix cosmic/*.nix plasma/*.nix gnome/*.nix lxqt/*.nix; do nix-instantiate --parse "$file" > /dev/null; done
 actionlint
 ```
 
-Run builders from the repository root with `python3 -m cosmic.ci` or `python3 -m plasma.ci`.
-The generated snapshot and verification files belong to the publication branches, not `main`.
+Run desktop commands from the repository root with `python3 -m cosmic.ci`, `python3 -m plasma.ci`
+`python3 -m gnome.ci` or `python3 -m lxqt.ci`. `scripts/cache.py` owns shared publication/transport settings;
+`scripts/desktop.py` shares GNOME/LXQt lifecycle checks; `scripts/storage.py` measures the shared runtime union. Root `default.nix` and `packages.nix`
+remain COSMIC compatibility entry points.
