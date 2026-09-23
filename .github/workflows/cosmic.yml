@@ -104,6 +104,15 @@ jobs:
             always-allow-substitutes = false
             max-jobs = 1
             cores = 2
+      - name: Add swap for fat-LTO links
+        # cosmic-comp links with lto = "fat" twice (build and check); on 16 GiB runners the
+        # second link intermittently starves the runner agent into "received a shutdown signal".
+        run: |
+          sudo fallocate -l 16G /mnt/cosmic-swap
+          sudo chmod 600 /mnt/cosmic-swap
+          sudo mkswap /mnt/cosmic-swap
+          sudo swapon /mnt/cosmic-swap
+          free -h
       - name: Build one COSMIC output
         run: python3 -m cosmic.ci build
       - name: Upload runtime closure only
