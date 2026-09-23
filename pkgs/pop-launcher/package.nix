@@ -14,7 +14,7 @@
 
 rustPlatform.buildRustPackage {
   pname = "pop-launcher";
-  version = "epoch-1.8.0-unstable-2026-08-24";
+  version = "epoch-1.9.0-unstable-2026-08-24";
 
   src = fetchFromGitHub {
     owner = "pop-os";
