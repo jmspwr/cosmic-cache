@@ -58,6 +58,11 @@ Unchanged verified sources, reference channel and client definitions skip packag
 a later update starts. Failures leave the previous publication in place. Retention always follows the
 actually published snapshot, including after repeated failed attempts; a branch race stops publication.
 
+The suite is COSMIC's own: every submodule of `pop-os/cosmic-epoch`. A component the packaging repository
+does not cover yet gets the Nixpkgs recipe, or a generic libcosmic recipe, updated to its HEAD; that stops by
+itself once upstream packages it. With COSMIC enabled, the consumer installs the whole suite, so new apps
+arrive without a configuration change; `environment.cosmic.excludePackages` opts out of any of them.
+
 The consumer imports matching upstream NixOS integration and already-instantiated COSMIC packages.
 Ordinary applications retain their host channel's package definitions. Assertions reject an incompatible
 architecture, stale proof, or competing overlay that changes a cached COSMIC output.

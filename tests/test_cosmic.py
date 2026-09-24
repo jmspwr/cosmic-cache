@@ -186,6 +186,36 @@ class SourceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'cosmic-new'):
                 ci.component_sources(directory)
 
+    def test_epoch_submodules_define_the_suite(self):
+        modules = ''.join(
+            f'[submodule "{n}"]\n\tpath = {n}\n\turl = https://github.com/pop-os/{n}{s}\n'
+            for n, s in [(f'cosmic-{i}', ['', '.git', '/'][i % 3]) for i in range(20)]
+            + [('simple-wrapper', ''), ('launcher', '.git')])
+        repos = ci.epoch_components(modules)
+        self.assertIn('pop-os/cosmic-1', repos)
+        self.assertIn('pop-os/launcher', repos)
+        self.assertNotIn('pop-os/simple-wrapper', repos)
+        with self.assertRaisesRegex(RuntimeError, 'epoch'):
+            ci.epoch_components('')
+
+    def test_every_epoch_component_gets_a_trackable_recipe(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.recipes(directory)
+            nixpkgs = Path(directory, 'nixpkgs')
+            (nixpkgs / 'pkgs/by-name/co/cosmic-known').mkdir(parents=True)
+            (nixpkgs / 'pkgs/by-name/co/cosmic-known/package.nix').write_text(
+                'src = fetchFromGitHub {\n owner = "pop-os";\n repo = "cosmic-known";\n rev = "' + 'b' * 40 + '";\n};\n')
+            repos = ['pop-os/' + n for n in self.required + ['cosmic-known', 'cosmic-new']]
+            suite, added = ci.supplement(directory, repos, nixpkgs)
+            self.assertEqual(added, ['cosmic-known', 'cosmic-new'])
+            self.assertEqual(sorted(suite), sorted(self.required + added))
+            self.assertEqual(ci.component_sources(directory)['pop-os/cosmic-known']['rev'], 'b' * 40)
+            self.assertIn('pop-os/cosmic-new', ci.component_sources(directory))
+            # Once the packaging repository covers a component, nothing is added for it.
+            self.assertEqual(ci.supplement(directory, repos, nixpkgs), (suite, []))
+            with self.assertRaisesRegex(RuntimeError, 'other/tool'):
+                ci.supplement(directory, ['other/tool'], nixpkgs)
+
     def test_component_selection_excludes_extensions_and_legacy_alias(self):
         for name in ['cosmic-comp', 'cosmic-app-library', 'cutecosmic', 'pop-launcher']:
             self.assertTrue(ci.selected_package(name))

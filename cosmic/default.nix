@@ -1,10 +1,18 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   snapshot = builtins.fromJSON (builtins.readFile ./snapshot.json);
   cache = builtins.fromJSON (builtins.readFile ../cache.json);
   upstream = builtins.getFlake snapshot.url;
   packages = import ./packages.nix;
   proof = builtins.fromJSON (builtins.readFile ./cache-proof.json);
+  # Every component COSMIC ships (its epoch submodules), so new apps arrive without a config change.
+  suite =
+    (builtins.fromJSON (builtins.readFile (upstream.outPath + "/.cosmic-cache-source.json"))).suite;
   cosmicOverlay = _: _: packages;
 in
 {
@@ -24,6 +32,10 @@ in
       message = "The COSMIC snapshot and cache proof do not match.";
     }
     {
+      assertion = builtins.all (name: packages ? ${name}) suite;
+      message = "A COSMIC epoch component is missing from the verified cache.";
+    }
+    {
       assertion = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
       message = "This COSMIC cache publishes x86_64-linux packages only.";
     }
@@ -35,6 +47,9 @@ in
     }
   ];
   nixpkgs.overlays = lib.mkAfter [ cosmicOverlay ];
+  environment.systemPackages = lib.mkIf config.services.desktopManager.cosmic.enable (
+    lib.subtractLists config.environment.cosmic.excludePackages (map (name: pkgs.${name}) suite)
+  );
   nix.settings = {
     experimental-features = [
       "nix-command"
