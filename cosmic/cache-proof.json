@@ -190,7 +190,7 @@
       "version": "1.9.0-unstable-2026-09-23"
     }
   },
-  "publicationParent": "c68265107bac215edb443365ee1d47b83d175542",
+  "publicationParent": "f6353986df484a6c99b9c89ee3a58ec83ca464ac",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1439,
@@ -227,11 +227,11 @@
         "pop-launcher": "/nix/store/5jwqqfgqinlfgihwx38mrqqxsbdbf88v-pop-launcher-epoch-1.9.0-unstable-2026-08-24",
         "xdg-desktop-portal-cosmic": "/nix/store/rd48dpwm456cbmyh3himnv8hzs8l1irp-xdg-desktop-portal-cosmic-1.9.0-unstable-2026-09-23"
       },
-      "revision": "6774f7bc253789b113a4f39285dc0fa100abeacc",
+      "revision": "4975466d324710c576dc11ad614684e6bd8cad8e",
       "sessions": [
         "cosmic"
       ],
-      "sha256": "1jmanihn33h564jk6fzpcjrrhyhchb11mqqkh6bdplnb5kw8i21i",
+      "sha256": "1if9h4d8rkgd7a41j978swbixif81iqfd7hk302w0fbd23i9g7y4",
       "systemDerivation": "/nix/store/h7fpv5nz5p08xnmz21f62rvddy16dk7k-nixos-system-nixos-26.11pre-git.drv",
       "systemPath": "/nix/store/6yawr48pvq7kp5wcsk67dch02gs4mxw0-nixos-system-nixos-26.11pre-git"
     }
@@ -251,7 +251,7 @@
         "compressedBytes": 274643850
       }
     },
-    "updateOverlapBytes": 589489858
+    "updateOverlapBytes": 274643850
   },
-  "verifiedAt": "2026-09-24T00:41:07.651849+00:00"
+  "verifiedAt": "2026-09-24T04:45:46.809812+00:00"
 }
