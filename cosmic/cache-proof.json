@@ -71,9 +71,9 @@
     },
     "cosmic-monitor": {
       "allowSubstitutes": true,
-      "path": "/nix/store/msd952mzlrzd21ljxb6xm75nc6bz28qm-cosmic-monitor-1.9.0-unstable-2026-09-22",
+      "path": "/nix/store/zjkxzi488k827slrdxrqj2nq1fkv2v6q-cosmic-monitor-1.9.0-unstable-2026-09-24",
       "preferLocalBuild": false,
-      "version": "1.9.0-unstable-2026-09-22"
+      "version": "1.9.0-unstable-2026-09-24"
     },
     "cosmic-notifications": {
       "allowSubstitutes": true,
@@ -202,7 +202,7 @@
       "version": "1.9.0-unstable-2026-09-23"
     }
   },
-  "publicationParent": "49f62dbe04089101bd9e21da1af1b3a0ff6c42d9",
+  "publicationParent": "cd7411cd41c2df2e42a58f8b1c881a54c86c34b7",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1469,
@@ -218,7 +218,7 @@
         "cosmic-idle": "/nix/store/m1sc12si276hbp7cakk92875j3hhy6kw-cosmic-idle-1.9.0-unstable-2026-02-13",
         "cosmic-initial-setup": "/nix/store/7y5wsx72y609zfqfz5xs0ja189x30129-cosmic-initial-setup-1.9.0-unstable-2026-09-15",
         "cosmic-launcher": "/nix/store/gvb1c0r5xlnd7h6mw3fn3k54lbp1kgmn-cosmic-launcher-1.9.0-unstable-2026-09-17",
-        "cosmic-monitor": "/nix/store/msd952mzlrzd21ljxb6xm75nc6bz28qm-cosmic-monitor-1.9.0-unstable-2026-09-22",
+        "cosmic-monitor": "/nix/store/zjkxzi488k827slrdxrqj2nq1fkv2v6q-cosmic-monitor-1.9.0-unstable-2026-09-24",
         "cosmic-notifications": "/nix/store/7a4zg97gl3cdp79wfg2lqlwz7mwxsjnl-cosmic-notifications-1.9.0-unstable-2026-09-16",
         "cosmic-osd": "/nix/store/arhbq32sndwqh647s8jh321siz3p0pr9-cosmic-osd-1.9.0-unstable-2026-09-24",
         "cosmic-osk": "/nix/store/y88as30vhk2n0qlgcn8vd9ixdydvfrd5-cosmic-osk-1.9.0-unstable-2026-09-22",
@@ -246,15 +246,15 @@
         "cosmic"
       ],
       "sha256": "1if9h4d8rkgd7a41j978swbixif81iqfd7hk302w0fbd23i9g7y4",
-      "systemDerivation": "/nix/store/xy10b8dqqdmvg7dnhhymjky4bbs0wgv3-nixos-system-nixos-26.11pre-git.drv",
-      "systemPath": "/nix/store/kd05p61b4skhi2y28xrgdf1x5g3lljfk-nixos-system-nixos-26.11pre-git"
+      "systemDerivation": "/nix/store/ydvmmp6k1hv2cl3b2y0l1xa7ak4sczan-nixos-system-nixos-26.11pre-git.drv",
+      "systemPath": "/nix/store/68wb0wc0lrjhwkgfg5v3fjqa31dby4c9-nixos-system-nixos-26.11pre-git"
     }
   },
-  "retentionRoot": "/nix/store/x26vzvw8fxpi5lgwjl5xn6ly24w4r9jz-cosmic-cache-runtime-roots",
-  "revision": "8005fbb0f7d94268ee0c708af475dbba365a9f6e",
+  "retentionRoot": "/nix/store/iz7xz1avxw3pzxn7v74dsbydbd5dpvqi-cosmic-cache-runtime-roots",
+  "revision": "4c6e08cc1b203d896d9a61f39099270687946e36",
   "schema": 3,
   "storage": {
-    "compressedBytes": 298140106,
+    "compressedBytes": 298139118,
     "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
     "runtimeBudgetBytes": 4294967296,
     "schema": 1,
@@ -262,10 +262,10 @@
     "snapshots": {
       "current": {
         "cachePaths": 65,
-        "compressedBytes": 298140106
+        "compressedBytes": 298139118
       }
     },
-    "updateOverlapBytes": 305711286
+    "updateOverlapBytes": 307946026
   },
-  "verifiedAt": "2026-09-24T22:49:51.819577+00:00"
+  "verifiedAt": "2026-09-25T02:05:09.161489+00:00"
 }
