@@ -1,6 +1,5 @@
 {
   "added": [
-    "cosmic-osk",
     "cosmic-viewer"
   ],
   "components": {
@@ -38,8 +37,8 @@
     "pop-os/launcher": "6390080a98a4a59b4e8196d28de97d3cb4d138ec",
     "pop-os/xdg-desktop-portal-cosmic": "38ddd40b3bcf704bfe8413a268a7150f443c1e36"
   },
-  "generatedAt": "2026-09-27T01:25:21.002288+00:00",
-  "packagingBase": "eddbaa6142ccb0d624e5c56f25634ef76456f758",
+  "generatedAt": "2026-09-27T13:55:48.682382+00:00",
+  "packagingBase": "cd97d6f3463a28895331bf488bf9b3ef664bbc3d",
   "schema": 2,
   "suite": [
     "cosmic-applets",
