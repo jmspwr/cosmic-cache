@@ -9,7 +9,7 @@
   nix-update-script,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage {
   pname = "cosmic-files";
   version = "1.9.0-unstable-2026-09-23";
 
@@ -25,7 +25,6 @@ rustPlatform.buildRustPackage rec {
   nativeBuildInputs = [
     libcosmicAppHook
     just
-    rustPlatform.bindgenHook
   ];
   buildInputs = [ glib ];
 
@@ -44,22 +43,14 @@ rustPlatform.buildRustPackage rec {
   #  "cosmic-files-applet"
   # ];
 
-  dontUseJustBuild = true;
-  dontUseJustCheck = true;
-
   justFlags = [
     "--set"
     "prefix"
     (placeholder "out")
     "--set"
-    "bin-src"
-    "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/cosmic-files"
-    "--set"
-    "applet-src"
-    "target/${stdenv.hostPlatform.rust.cargoShortTarget}/release/cosmic-files-applet"
+    "cargo-target-dir"
+    "target/${stdenv.hostPlatform.rust.cargoShortTarget}"
   ];
-
-  env.VERGEN_GIT_SHA = src.rev;
 
   # TODO: remove next two phases if these packages can ever be built at the same time
   buildPhase = ''
@@ -68,15 +59,19 @@ rustPlatform.buildRustPackage rec {
     runHook cargoBuildHook
     cargoBuildFlags="$baseCargoBuildFlags --package cosmic-files-applet"
     runHook cargoBuildHook
+    cargoBuildFlags="$baseCargoBuildFlags --package cosmic-files-thumbnailer"
+    runHook cargoBuildHook
   '';
 
   checkPhase = ''
     baseCargoTestFlags="$cargoTestFlags"
-    # operation tests require io_uring and fail in nix-sandbox
+    # cargoCheckHook prepends to checkFlags, so isolate each invocation.
     cargoTestFlags="$baseCargoTestFlags --package cosmic-files"
-    runHook cargoCheckHook
+    (runHook cargoCheckHook)
     cargoTestFlags="$baseCargoTestFlags --package cosmic-files-applet"
-    runHook cargoCheckHook
+    (runHook cargoCheckHook)
+    cargoTestFlags="$baseCargoTestFlags --package cosmic-files-thumbnailer"
+    (runHook cargoCheckHook)
   '';
 
   passthru.updateScript = nix-update-script {
@@ -90,9 +85,6 @@ rustPlatform.buildRustPackage rec {
     homepage = "https://github.com/pop-os/cosmic-files";
     description = "File Manager for the COSMIC Desktop Environment";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [
-      # lilyinstarlight
-    ];
     platforms = lib.platforms.linux;
     mainProgram = "cosmic-files";
   };
