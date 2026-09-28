@@ -202,7 +202,7 @@
       "version": "1.9.0-unstable-2026-09-23"
     }
   },
-  "publicationParent": "7280ef914875d1db501cefb05fd9c6c1be80b2ff",
+  "publicationParent": "468a47ca0fc6dcf249e2e6d99cea539093927d3f",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1470,
@@ -241,20 +241,20 @@
         "pop-launcher": "/nix/store/5jwqqfgqinlfgihwx38mrqqxsbdbf88v-pop-launcher-epoch-1.9.0-unstable-2026-08-24",
         "xdg-desktop-portal-cosmic": "/nix/store/rd48dpwm456cbmyh3himnv8hzs8l1irp-xdg-desktop-portal-cosmic-1.9.0-unstable-2026-09-23"
       },
-      "revision": "e158d9ed9b51c98974c5e66e1ba1c9e0255fecaa",
+      "revision": "7a0f122f5090cf4c2ade2a13a0e229d4e19ba71f",
       "sessions": [
         "cosmic"
       ],
-      "sha256": "1sypv6hh52q4byjq8na6c7k4r0ll6zbgbpcv8dsd3mc1bnbmbac4",
-      "systemDerivation": "/nix/store/lg0l2s46zs6if4n8z0jl622kd2vxl3vb-nixos-system-nixos-26.11pre-git.drv",
-      "systemPath": "/nix/store/bvnf353x0ffn6i79v8cqjhh4kvva9caa-nixos-system-nixos-26.11pre-git"
+      "sha256": "0lbmglidppdwl8xxyrc77mlq2wsr0xnrgxxifp14ivr8k414i336",
+      "systemDerivation": "/nix/store/p34jxmy5dgsq2kh16qwfy4f4zr9wlrha-nixos-system-nixos-26.11pre-git.drv",
+      "systemPath": "/nix/store/jm7vi6b7hd6fq1vfbq3ak3np9zmwvkgi-nixos-system-nixos-26.11pre-git"
     }
   },
-  "retentionRoot": "/nix/store/3vl3gr7rvlgskjn7sr01fcrzwdbzijl0-cosmic-cache-runtime-roots",
+  "retentionRoot": "/nix/store/lwrxnqj7j6546amjx3d1nqvvdn6biwy4-cosmic-cache-runtime-roots",
   "revision": "48eddac52d1f1efb9a86a86e92e9d7efeb7a5b56",
   "schema": 3,
   "storage": {
-    "compressedBytes": 298139818,
+    "compressedBytes": 298139922,
     "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
     "runtimeBudgetBytes": 4294967296,
     "schema": 1,
@@ -262,10 +262,10 @@
     "snapshots": {
       "current": {
         "cachePaths": 65,
-        "compressedBytes": 298139818
+        "compressedBytes": 298139922
       }
     },
-    "updateOverlapBytes": 307775306
+    "updateOverlapBytes": 298611126
   },
-  "verifiedAt": "2026-09-27T14:12:53.913157+00:00"
+  "verifiedAt": "2026-09-28T15:22:49.458556+00:00"
 }
