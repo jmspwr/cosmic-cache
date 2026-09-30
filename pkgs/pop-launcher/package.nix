@@ -14,13 +14,13 @@
 
 rustPlatform.buildRustPackage {
   pname = "pop-launcher";
-  version = "epoch-1.9.0-unstable-2026-08-24";
+  version = "epoch-1.9.0-unstable-2026-09-30";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "launcher";
-    rev = "6390080a98a4a59b4e8196d28de97d3cb4d138ec";
-    hash = "sha256-OfUpbpAhUGUFunucRgbD+UXF40sl6PgpmJzUjbfn1Z8=";
+    rev = "8a09fa50a9fbbe66a97afe3865b5e61dd1d0432c";
+    hash = "sha256-zjuynfB54Aig3melJpMheMdG7QXV8tP6+3yqyAOBPLY=";
   };
 
   cargoHash = "sha256-k57ondlF1xu5/GU9QzKkT5F2caFNNPC6/Bj2HWwzzGI=";

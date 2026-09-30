@@ -9,13 +9,13 @@
 
 stdenv.mkDerivation (self: {
   pname = "cosmic-sound-theme";
-  version = "1.9.0-unstable-2026-07-01";
+  version = "1.9.0-unstable-2026-09-30";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-sound-theme";
-    rev = "7aabe449093787163c74c25aa1bd4663fb4c324c";
-    hash = "sha256-hFWTn73SutdOZGbhkcsBR1TNabB+IOrxRndwXaikqN8=";
+    rev = "bf5335fe1af0cb3bee83e1ad2371410ee434658d";
+    hash = "sha256-TVB+GnFmrPf1+OdfQozFoi+P41oNNW+4qrKtVl08Bbg=";
   };
 
   nativeBuildInputs = [
