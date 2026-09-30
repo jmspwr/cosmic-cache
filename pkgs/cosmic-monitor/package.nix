@@ -16,8 +16,8 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-monitor";
-    rev = "7a51a26422c1f65ba27fbf76823bbbcbb645d0ab";
-    hash = "sha256-XsbhHh+eK3k5L12nUa3ivxviI+z4uyMnpaTKCl6fiSE=";
+    rev = "343df86505bd5b624b2af4a8f588e429489e4ea9";
+    hash = "sha256-na+SyGhspEGHx4gjUaNk+kqCWqGUysJzZ+uNI6LgUNw=";
   };
 
   cargoHash = "sha256-OM7oNcXuZmdnkdPexTQkHHAN4VxL3wdBqBuZp9vQLG8=";
