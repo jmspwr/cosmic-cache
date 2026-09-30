@@ -202,10 +202,10 @@
       "version": "1.9.0-unstable-2026-09-23"
     }
   },
-  "publicationParent": "d1fe28407945098e06eed914db4b118e3f320a22",
+  "publicationParent": "de9d62a58e2202d26c63f52b2eb9424a82aba691",
   "referenceSystems": {
     "nixos-unstable": {
-      "closurePaths": 1470,
+      "closurePaths": 1471,
       "packages": {
         "cosmic-app-library": "/nix/store/xsf1lmk1fqfp6xk5sjmj1nxn6kjvrnnm-cosmic-applibrary-1.9.0-unstable-2026-09-16",
         "cosmic-applets": "/nix/store/iwgcwjych8cdjhfbr33vswqv1c99zhbq-cosmic-applets-1.9.0-unstable-2026-09-23",
@@ -241,31 +241,31 @@
         "pop-launcher": "/nix/store/5jwqqfgqinlfgihwx38mrqqxsbdbf88v-pop-launcher-epoch-1.9.0-unstable-2026-08-24",
         "xdg-desktop-portal-cosmic": "/nix/store/rd48dpwm456cbmyh3himnv8hzs8l1irp-xdg-desktop-portal-cosmic-1.9.0-unstable-2026-09-23"
       },
-      "revision": "7a0f122f5090cf4c2ade2a13a0e229d4e19ba71f",
+      "revision": "b4fd65b198c599cbe814fcb9f42d25d021595ec9",
       "sessions": [
         "cosmic"
       ],
-      "sha256": "0lbmglidppdwl8xxyrc77mlq2wsr0xnrgxxifp14ivr8k414i336",
-      "systemDerivation": "/nix/store/a02lhnl6z4c19d1lys8yfadwgy129rga-nixos-system-nixos-26.11pre-git.drv",
-      "systemPath": "/nix/store/l6ci3pgmglw5xqbabdhkwz566dg5wpyd-nixos-system-nixos-26.11pre-git"
+      "sha256": "1a241q5kynd8zg3s169n5pklkpxzsqpqiwy83izg2jlbalvsnmwa",
+      "systemDerivation": "/nix/store/iks6z1h3wqxbnjwjw8w1spw9r70mf7fl-nixos-system-nixos-26.11pre-git.drv",
+      "systemPath": "/nix/store/s891xf6nr2cag5x1zdynhcshn48dn4kp-nixos-system-nixos-26.11pre-git"
     }
   },
-  "retentionRoot": "/nix/store/gapg0dkpvn255vi06gvqykq05xs3yvjp-cosmic-cache-runtime-roots",
+  "retentionRoot": "/nix/store/sbc90w82wpkkz8rcg1mvbcmjhg7862yf-cosmic-cache-runtime-roots",
   "revision": "fa70cb0721a701dd3baf3f9a46902fd6a51b5d84",
   "schema": 3,
   "storage": {
-    "compressedBytes": 298140382,
+    "compressedBytes": 298218170,
     "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
     "runtimeBudgetBytes": 4294967296,
     "schema": 1,
     "scope": "COSMIC runtime closures, not total account usage or obsolete unpinned data",
     "snapshots": {
       "current": {
-        "cachePaths": 65,
-        "compressedBytes": 298140382
+        "cachePaths": 68,
+        "compressedBytes": 298218170
       }
     },
-    "updateOverlapBytes": 303234230
+    "updateOverlapBytes": 298700746
   },
-  "verifiedAt": "2026-09-28T22:13:33.383473+00:00"
+  "verifiedAt": "2026-09-30T14:19:39.534830+00:00"
 }
