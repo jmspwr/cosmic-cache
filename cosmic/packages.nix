@@ -23,6 +23,30 @@ let
           "${lib.findFirst (lib.hasSuffix "/release/cosmic-files") null o.justFlags}-thumbnailer"
         ];
       });
+  # TEMPORARY: pop-os/cosmic-comp 3d55cba (1 Oct 2026, "build: migrate from make to just") deleted
+  # the Makefile, so the upstream recipe's `make install` fails with "No rule to make target
+  # 'install'". This self-removes: it applies only while the recipe never mentions justFlags, so
+  # the upstream fix silently supersedes it. Delete once that has happened.
+  fixes.cosmic-comp =
+    p:
+    if lib.hasInfix "justFlags" (recipe "cosmic-comp") then
+      p
+    else
+      p.overrideAttrs (o: {
+        nativeBuildInputs = o.nativeBuildInputs ++ [
+          upstream.inputs.nixpkgs.legacyPackages.x86_64-linux.just
+        ];
+        dontUseJustBuild = true;
+        dontUseJustCheck = true;
+        justFlags = [
+          "--set"
+          "prefix"
+          "${placeholder "out"}"
+          "--set"
+          "cargo-target-dir"
+          "target/x86_64-unknown-linux-gnu"
+        ];
+      });
   packages = builtins.mapAttrs (name: p: (fixes.${name} or (x: x)) p) upstream.packages.x86_64-linux;
   selected =
     name:
