@@ -29,13 +29,13 @@
     },
     "cosmic-edit": {
       "allowSubstitutes": true,
-      "path": "/nix/store/harpnj0bcs8x83y0z3i5ib7pbssqm7pm-cosmic-edit-1.9.0-unstable-2026-09-30",
+      "path": "/nix/store/hcjajhz24pm5a97x6ak7vpdk1g5hjhir-cosmic-edit-1.9.0-unstable-2026-09-30",
       "preferLocalBuild": false,
       "version": "1.9.0-unstable-2026-09-30"
     },
     "cosmic-files": {
       "allowSubstitutes": true,
-      "path": "/nix/store/x9hsal1dbdbn34xb66rzvfx0yqv4jdac-cosmic-files-1.9.0-unstable-2026-09-30",
+      "path": "/nix/store/jkivbns435yvdqd5p0k0ib0hsqanp7ki-cosmic-files-1.9.0-unstable-2026-09-30",
       "preferLocalBuild": false,
       "version": "1.9.0-unstable-2026-09-30"
     },
@@ -71,7 +71,7 @@
     },
     "cosmic-monitor": {
       "allowSubstitutes": true,
-      "path": "/nix/store/il4lv71aapqbz2xhlri50f92591ygs0i-cosmic-monitor-1.9.0-unstable-2026-09-30",
+      "path": "/nix/store/id0wmb1d3m2js3y6aj21k37lcibcwq8v-cosmic-monitor-1.9.0-unstable-2026-09-30",
       "preferLocalBuild": false,
       "version": "1.9.0-unstable-2026-09-30"
     },
@@ -161,7 +161,7 @@
     },
     "cosmic-term": {
       "allowSubstitutes": true,
-      "path": "/nix/store/2k85z8g50rz34c2n3azrl8nin1jfzh6s-cosmic-term-1.9.0-unstable-2026-09-30",
+      "path": "/nix/store/63dw9kqadfbdqgydzj4ygspznjnak3wg-cosmic-term-1.9.0-unstable-2026-09-30",
       "preferLocalBuild": false,
       "version": "1.9.0-unstable-2026-09-30"
     },
@@ -202,7 +202,7 @@
       "version": "1.9.0-unstable-2026-09-30"
     }
   },
-  "publicationParent": "31310f1f22c36d4726bda4f1f479e8cb591c4954",
+  "publicationParent": "9f9fd5fb1693e57f7a4a84123c298398b23f3e5d",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1471,
@@ -211,14 +211,14 @@
         "cosmic-applets": "/nix/store/cq8wpkzycf8nhm6lpz4mns0i1m00xr2x-cosmic-applets-1.9.0-unstable-2026-09-30",
         "cosmic-bg": "/nix/store/5wz8p8srg85hf6h70n56f3d2k7jb0j9c-cosmic-bg-1.9.0-unstable-2026-09-30",
         "cosmic-comp": "/nix/store/db4zsj9z4fvxzjf9zxlc5zvspm8kdynj-cosmic-comp-1.9.0-unstable-2026-09-30",
-        "cosmic-edit": "/nix/store/harpnj0bcs8x83y0z3i5ib7pbssqm7pm-cosmic-edit-1.9.0-unstable-2026-09-30",
-        "cosmic-files": "/nix/store/x9hsal1dbdbn34xb66rzvfx0yqv4jdac-cosmic-files-1.9.0-unstable-2026-09-30",
+        "cosmic-edit": "/nix/store/hcjajhz24pm5a97x6ak7vpdk1g5hjhir-cosmic-edit-1.9.0-unstable-2026-09-30",
+        "cosmic-files": "/nix/store/jkivbns435yvdqd5p0k0ib0hsqanp7ki-cosmic-files-1.9.0-unstable-2026-09-30",
         "cosmic-greeter": "/nix/store/ic350lr59jgv2cjvxccrh0jhb5k6l1n5-cosmic-greeter-1.9.1-unstable-2026-09-30",
         "cosmic-icons": "/nix/store/sv7jlwlf2qz5zhlbxyrmqzhkx761km7s-cosmic-icons-1.9.0-unstable-2026-09-30",
         "cosmic-idle": "/nix/store/9hd7s4131hynpri27dll48wl1q6brgzb-cosmic-idle-1.9.0-unstable-2026-09-30",
         "cosmic-initial-setup": "/nix/store/9cqcg88z00mfpmi1fr0l22ijdlmx8d5d-cosmic-initial-setup-1.9.0-unstable-2026-09-30",
         "cosmic-launcher": "/nix/store/blkbbva39cq7nhn40rhnpy1zhh35kkdv-cosmic-launcher-1.9.0-unstable-2026-09-30",
-        "cosmic-monitor": "/nix/store/il4lv71aapqbz2xhlri50f92591ygs0i-cosmic-monitor-1.9.0-unstable-2026-09-30",
+        "cosmic-monitor": "/nix/store/id0wmb1d3m2js3y6aj21k37lcibcwq8v-cosmic-monitor-1.9.0-unstable-2026-09-30",
         "cosmic-notifications": "/nix/store/0q5d93s7zawkjmyd7dk5iij9if1x1629-cosmic-notifications-1.9.0-unstable-2026-09-30",
         "cosmic-osd": "/nix/store/12s3jm3iv518raqgcicim49mb3y8vxwa-cosmic-osd-1.9.0-unstable-2026-09-30",
         "cosmic-osk": "/nix/store/gwq6ig4fkbgcxyq972m67pij1pm7igsy-cosmic-osk-1.9.0-unstable-2026-09-30",
@@ -233,7 +233,7 @@
         "cosmic-settings-daemon": "/nix/store/fb8hm7p7fa0sd6y0d6s6dr100pb0aj1l-cosmic-settings-daemon-1.9.0-unstable-2026-09-30",
         "cosmic-sound-theme": "/nix/store/c157424cw3z0gbwwssqcbmrw05ax763b-cosmic-sound-theme-1.9.0-unstable-2026-09-30",
         "cosmic-store": "/nix/store/5f4ga4kxg5synji0jl0ffd20shfwdkjy-cosmic-store-1.9.0-unstable-2026-09-30",
-        "cosmic-term": "/nix/store/2k85z8g50rz34c2n3azrl8nin1jfzh6s-cosmic-term-1.9.0-unstable-2026-09-30",
+        "cosmic-term": "/nix/store/63dw9kqadfbdqgydzj4ygspznjnak3wg-cosmic-term-1.9.0-unstable-2026-09-30",
         "cosmic-viewer": "/nix/store/i3sk1xi59sv0libmncw9bln2djrym6zp-cosmic-viewer-1.9.0-unstable-2026-09-30",
         "cosmic-wallpapers": "/nix/store/9wvqqrdv1rwg633wkqlhsvp582snb041-cosmic-wallpapers-1.9.0-unstable-2026-09-30",
         "cosmic-workspaces-epoch": "/nix/store/kwj3km4mn1v5w7lrbrmq8364f5nr8r5l-cosmic-workspaces-epoch-1.9.0-unstable-2026-09-30",
@@ -246,15 +246,15 @@
         "cosmic"
       ],
       "sha256": "1a241q5kynd8zg3s169n5pklkpxzsqpqiwy83izg2jlbalvsnmwa",
-      "systemDerivation": "/nix/store/g4mb5h1q71wb8lyl01kz9n05qa7l1ibn-nixos-system-nixos-26.11pre-git.drv",
-      "systemPath": "/nix/store/0x8pqsp7qx95swnlaiycmhwwdwjsrw8g-nixos-system-nixos-26.11pre-git"
+      "systemDerivation": "/nix/store/6iwiw3qcy7z7lypjhiw8sjrv0ck63hzb-nixos-system-nixos-26.11pre-git.drv",
+      "systemPath": "/nix/store/nrxb8j3i78ihpilbk6rk9jz02wx3nasq-nixos-system-nixos-26.11pre-git"
     }
   },
-  "retentionRoot": "/nix/store/b8s2hx0nknzfw6zjcji0gjd1ih3wxsg4-cosmic-cache-runtime-roots",
-  "revision": "2bea58842ec7d737cab39eb939dc0ad97de594aa",
+  "retentionRoot": "/nix/store/2x2f6xs8yabdki2lck5lyp3nkzqmd1gh-cosmic-cache-runtime-roots",
+  "revision": "163c3b3ee697435dfc4740a230d46a6e5192313f",
   "schema": 3,
   "storage": {
-    "compressedBytes": 298276182,
+    "compressedBytes": 298261938,
     "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
     "runtimeBudgetBytes": 4294967296,
     "schema": 1,
@@ -262,10 +262,10 @@
     "snapshots": {
       "current": {
         "cachePaths": 68,
-        "compressedBytes": 298276182
+        "compressedBytes": 298261938
       }
     },
-    "updateOverlapBytes": 568397114
+    "updateOverlapBytes": 361479210
   },
-  "verifiedAt": "2026-09-30T20:13:38.603919+00:00"
+  "verifiedAt": "2026-10-01T00:39:32.819192+00:00"
 }
