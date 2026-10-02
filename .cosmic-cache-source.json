@@ -37,7 +37,8 @@
     "pop-os/launcher": "8a09fa50a9fbbe66a97afe3865b5e61dd1d0432c",
     "pop-os/xdg-desktop-portal-cosmic": "4902f57242bc79f78588e245e5636e0d722c694a"
   },
-  "generatedAt": "2026-10-02T05:41:20.360687+00:00",
+  "generatedAt": "2026-10-02T11:57:51.403284+00:00",
+  "nixpkgs": "c59305bab2065cfecc4944690d9eedbb56f3a9fa",
   "packagingBase": "cd97d6f3463a28895331bf488bf9b3ef664bbc3d",
   "schema": 2,
   "suite": [
