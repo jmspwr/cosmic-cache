@@ -121,6 +121,39 @@ class PipelineTests(unittest.TestCase):
 
 
 
+class NixpkgsPinTests(unittest.TestCase):
+    """Packages must evaluate on the host's nixos-unstable, or their glibc differs from the host's Mesa."""
+
+    def refresh_until_pinned(self, meta):
+        calls = []
+
+        def fake_run(*args, **kwargs):
+            calls.append(args)
+            if args[:2] == ('nix', 'eval'):
+                raise RuntimeError('stop after pin')
+            return ''
+
+        with patch.object(ci, 'public_branch_head', return_value='b' * 40), \
+             patch.object(ci, 'source_metadata', return_value=meta), \
+             patch.object(ci, 'host_revision', return_value='h' * 40), \
+             patch.object(ci, 'epoch_components', return_value=[]), \
+             patch.object(ci.urllib.request, 'urlopen'), \
+             patch.object(ci, 'run', side_effect=fake_run):
+            with self.assertRaises(RuntimeError):
+                ci.refresh_source()
+        return calls
+
+    def test_snapshot_is_locked_to_the_host_nixpkgs_before_anything_evaluates(self):
+        calls = self.refresh_until_pinned(None)
+        pin = ('nix', 'flake', 'lock', '--override-input', 'nixpkgs', 'github:NixOS/nixpkgs/' + 'h' * 40)
+        self.assertIn(pin, [c[:6] for c in calls])
+        self.assertLess([c[:6] for c in calls].index(pin), [c[:2] for c in calls].index(('nix', 'eval')))
+
+    def test_snapshot_built_on_another_nixpkgs_is_not_current(self):
+        meta = {'schema': 2, 'packagingBase': '', 'components': {}, 'suite': [], 'nixpkgs': 'old'}
+        self.assertTrue(any(c[:2] == ('nix', 'flake') for c in self.refresh_until_pinned(meta)))
+
+
 class SourceTests(unittest.TestCase):
     required = ['cosmic-comp', 'cosmic-greeter', 'cosmic-panel', 'cosmic-session',
                 'cosmic-settings', 'xdg-desktop-portal-cosmic']

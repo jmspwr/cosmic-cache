@@ -289,6 +289,7 @@ def github_push_env(token: str) -> dict[str, str]:
 def refresh_source() -> tuple[str, bool]:
     previous = public_branch_head(SOURCE_BRANCH)
     previous_meta = source_metadata(previous)
+    host = host_revision()
 
     with tempfile.TemporaryDirectory(prefix="cosmic-source-") as tmp:
         run(
@@ -296,6 +297,10 @@ def refresh_source() -> tuple[str, bool]:
             PACKAGING_GIT, tmp, capture=False,
         )
         base = run("git", "rev-parse", "HEAD", cwd=tmp)
+        # Upstream's flake.lock lags nixos-unstable by weeks; its packages would then link an older
+        # glibc than the host's Mesa and COSMIC would fail to load the graphics drivers.
+        run("nix", "flake", "lock", "--override-input", "nixpkgs",
+            f"github:NixOS/nixpkgs/{host}", cwd=tmp, env=build_env())
         with urllib.request.urlopen(EPOCH_MODULES, timeout=30) as response:
             repos = epoch_components(response.read().decode())
         nixpkgs = run("nix", "eval", "--raw", "--inputs-from", ".", "nixpkgs#path", cwd=tmp, env=build_env())
@@ -310,6 +315,7 @@ def refresh_source() -> tuple[str, bool]:
             and previous_meta.get("packagingBase") == base
             and previous_meta.get("components") == heads
             and previous_meta.get("suite") == suite
+            and previous_meta.get("nixpkgs") == host
         ):
             print(f"COSMIC source snapshot already current at {previous}")
             return previous, False
@@ -358,6 +364,7 @@ def refresh_source() -> tuple[str, bool]:
             {
                 "schema": 2,
                 "packagingBase": base,
+                "nixpkgs": host,
                 "components": heads_after,
                 "suite": suite,
                 "added": added,
