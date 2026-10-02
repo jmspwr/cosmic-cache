@@ -249,6 +249,17 @@ class SourceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'other/tool'):
                 ci.supplement(directory, ['other/tool'], nixpkgs)
 
+    def test_nixpkgs_recipe_without_a_pinned_revision_is_replaced_by_the_generic_one(self):
+        with tempfile.TemporaryDirectory() as directory:
+            self.recipes(directory)
+            nixpkgs = Path(directory, 'nixpkgs')
+            (nixpkgs / 'pkgs/by-name/co/cosmic-tagged').mkdir(parents=True)
+            (nixpkgs / 'pkgs/by-name/co/cosmic-tagged/package.nix').write_text(
+                'src = fetchFromGitHub {\n owner = "pop-os";\n repo = "cosmic-tagged";\n tag = "epoch-1.9.0";\n hash = "x";\n};\n')
+            repos = ['pop-os/' + n for n in self.required + ['cosmic-tagged']]
+            self.assertEqual(ci.supplement(directory, repos, nixpkgs)[1], ['cosmic-tagged'])
+            self.assertIn('pop-os/cosmic-tagged', ci.component_sources(directory))
+
     def test_component_selection_excludes_extensions_and_legacy_alias(self):
         for name in ['cosmic-comp', 'cosmic-app-library', 'cutecosmic', 'pop-launcher']:
             self.assertTrue(ci.selected_package(name))

@@ -199,7 +199,7 @@ def epoch_components(gitmodules: str) -> list[str]:
 
 
 def supplement(root: str | Path, repos: list[str], nixpkgs: str | Path) -> tuple[list[str], list[str]]:
-    """Give every epoch component a recipe, preferring the packaging repository, then Nixpkgs.
+    """Give every epoch component a recipe, preferring the packaging repository, then a revision-pinned Nixpkgs recipe.
 
     Returns the suite's package names and the names that needed a recipe added here; an added
     recipe disappears by itself once the packaging repository covers that component.
@@ -215,7 +215,8 @@ def supplement(root: str | Path, repos: list[str], nixpkgs: str | Path) -> tuple
             if not selected_package(name) or target.exists():
                 raise RuntimeError(f"Cannot package COSMIC epoch component {repo}")
             known = Path(nixpkgs, "pkgs", "by-name", name[:2], name)
-            if known.is_dir():
+            # A release-tag recipe (`tag = "epoch-..."`) pins no revision, so HEAD cannot be tracked from it.
+            if (known / "package.nix").is_file() and re.search(r'\brev\s*=\s*"[0-9a-f]{40}"', (known / "package.nix").read_text()):
                 shutil.copytree(known, target)
                 for path in [target, *target.rglob("*")]:  # Store copies are read-only.
                     path.chmod(0o755 if path.is_dir() else 0o644)
