@@ -51,12 +51,13 @@ rustPlatform.buildRustPackage {
   # only default feature is systemd
   buildNoDefaultFeatures = !useSystemd;
 
-  dontCargoInstall = true;
+  installPhase = ''
+    runHook preInstall
 
-  makeFlags = [
-    "prefix=${placeholder "out"}"
-    "CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget}"
-  ];
+    CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget} just --set prefix "$out" install
+
+    runHook postInstall
+  '';
 
   preFixup = lib.optionalString useXWayland ''
     libcosmicAppWrapperArgs+=(--prefix PATH : ${lib.makeBinPath [ xwayland ]})

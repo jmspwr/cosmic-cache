@@ -1,7 +1,5 @@
 {
-  "added": [
-    "cosmic-viewer"
-  ],
+  "added": [],
   "components": {
     "IgKh/cutecosmic": "5fa7c228ce04c5310c61dd975e940397711e3cef",
     "pop-os/cosmic-applets": "57ace74745a88a30aa06262bfdeafd1a939c4c77",
@@ -37,9 +35,9 @@
     "pop-os/launcher": "8a09fa50a9fbbe66a97afe3865b5e61dd1d0432c",
     "pop-os/xdg-desktop-portal-cosmic": "4902f57242bc79f78588e245e5636e0d722c694a"
   },
-  "generatedAt": "2026-10-03T02:03:35.202058+00:00",
+  "generatedAt": "2026-10-03T21:10:51.995596+00:00",
   "nixpkgs": "c59305bab2065cfecc4944690d9eedbb56f3a9fa",
-  "packagingBase": "cd97d6f3463a28895331bf488bf9b3ef664bbc3d",
+  "packagingBase": "3bbd96b377146623d7366a6cb75027a677b71e85",
   "schema": 2,
   "suite": [
     "cosmic-applets",
