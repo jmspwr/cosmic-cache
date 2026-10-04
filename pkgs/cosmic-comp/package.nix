@@ -2,6 +2,7 @@
   lib,
   fetchFromGitHub,
   rustPlatform,
+  just,
   libcosmicAppHook,
   libdisplay-info,
   libdisplay-info_0_3 ? libdisplay-info,
@@ -54,7 +55,7 @@ rustPlatform.buildRustPackage {
   installPhase = ''
     runHook preInstall
 
-    CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget} just --set prefix "$out" install
+    CARGO_TARGET_DIR=target/${stdenv.hostPlatform.rust.cargoShortTarget} ${lib.getExe just} --set prefix "$out" install
 
     runHook postInstall
   '';
