@@ -23,9 +23,9 @@
     },
     "cosmic-comp": {
       "allowSubstitutes": true,
-      "path": "/nix/store/hjnd7n6l4ksdl2ljdm3mssds0dpzhf6p-cosmic-comp-1.9.0-unstable-2026-10-01",
+      "path": "/nix/store/y35bgy6pbvqj8ls3y9nr4g8bx1h6jby3-cosmic-comp-1.9.0-unstable-2026-10-05",
       "preferLocalBuild": false,
-      "version": "1.9.0-unstable-2026-10-01"
+      "version": "1.9.0-unstable-2026-10-05"
     },
     "cosmic-edit": {
       "allowSubstitutes": true,
@@ -131,9 +131,9 @@
     },
     "cosmic-session": {
       "allowSubstitutes": true,
-      "path": "/nix/store/q2shz2s0z4vivvi5ja28a29jngl54228-cosmic-session-1.9.0-unstable-2026-10-02",
+      "path": "/nix/store/8qc3risx9aqkwdadsbfrxqbbc1rlxw03-cosmic-session-1.9.0-unstable-2026-10-05",
       "preferLocalBuild": false,
-      "version": "1.9.0-unstable-2026-10-02"
+      "version": "1.9.0-unstable-2026-10-05"
     },
     "cosmic-settings": {
       "allowSubstitutes": true,
@@ -143,9 +143,9 @@
     },
     "cosmic-settings-daemon": {
       "allowSubstitutes": true,
-      "path": "/nix/store/daviji7lqmqqglhycbapqcilksc68il1-cosmic-settings-daemon-1.9.0-unstable-2026-10-02",
+      "path": "/nix/store/nycqv942hkd22pqckycbawjzh47l1h9p-cosmic-settings-daemon-1.9.0-unstable-2026-10-05",
       "preferLocalBuild": false,
-      "version": "1.9.0-unstable-2026-10-02"
+      "version": "1.9.0-unstable-2026-10-05"
     },
     "cosmic-sound-theme": {
       "allowSubstitutes": true,
@@ -155,9 +155,9 @@
     },
     "cosmic-store": {
       "allowSubstitutes": true,
-      "path": "/nix/store/79kiw08jpkrhk0l909l61kyhaq8csass-cosmic-store-1.9.0-unstable-2026-10-01",
+      "path": "/nix/store/bp5wh5qw06d6kxdvrjjadxc7dv7gwazf-cosmic-store-1.9.0-unstable-2026-10-05",
       "preferLocalBuild": false,
-      "version": "1.9.0-unstable-2026-10-01"
+      "version": "1.9.0-unstable-2026-10-05"
     },
     "cosmic-term": {
       "allowSubstitutes": true,
@@ -202,15 +202,15 @@
       "version": "1.9.0-unstable-2026-09-30"
     }
   },
-  "publicationParent": "912ea2766f434ee001a3199f613d6c2e42748ebb",
+  "publicationParent": "12e996a35a922030028e7d7bfb26cef2ced9f8f2",
   "referenceSystems": {
     "nixos-unstable": {
-      "closurePaths": 1143,
+      "closurePaths": 1145,
       "packages": {
         "cosmic-app-library": "/nix/store/12xmm0b3hi4sqhf4raflgap6vjfn30jx-cosmic-applibrary-1.9.0-unstable-2026-09-30",
         "cosmic-applets": "/nix/store/yjpbkxh367z5w9igxsi7apmjgz0s7zvr-cosmic-applets-1.9.0-unstable-2026-09-30",
         "cosmic-bg": "/nix/store/vg65f2pj3w8x48js7dhxrjg75amajs6b-cosmic-bg-1.9.0-unstable-2026-09-30",
-        "cosmic-comp": "/nix/store/hjnd7n6l4ksdl2ljdm3mssds0dpzhf6p-cosmic-comp-1.9.0-unstable-2026-10-01",
+        "cosmic-comp": "/nix/store/y35bgy6pbvqj8ls3y9nr4g8bx1h6jby3-cosmic-comp-1.9.0-unstable-2026-10-05",
         "cosmic-edit": "/nix/store/dqk8l6acbc1cmkpvnxhi523v04ja29i5-cosmic-edit-1.9.0-unstable-2026-09-30",
         "cosmic-files": "/nix/store/z02z2iv4vfqpplddi1w866pvjjpf05pw-cosmic-files-1.9.0-unstable-2026-10-02",
         "cosmic-greeter": "/nix/store/sgrrfanbpass8wlm35rndp1j8b01j337-cosmic-greeter-1.9.1-unstable-2026-09-30",
@@ -228,11 +228,11 @@
         "cosmic-randr": "/nix/store/6md18ab6fm32906a5kjspmczcvf22dqv-cosmic-randr-1.9.0-unstable-2026-09-30",
         "cosmic-reader": "/nix/store/1ddfkaa0g39pijkq1qsfm0a6c4g5m1z2-cosmic-reader-0-unstable-2026-09-15",
         "cosmic-screenshot": "/nix/store/kcwnkgpxh6kpc71n35rwmkvk6hc4j47j-cosmic-screenshot-1.9.0-unstable-2026-09-30",
-        "cosmic-session": "/nix/store/q2shz2s0z4vivvi5ja28a29jngl54228-cosmic-session-1.9.0-unstable-2026-10-02",
+        "cosmic-session": "/nix/store/8qc3risx9aqkwdadsbfrxqbbc1rlxw03-cosmic-session-1.9.0-unstable-2026-10-05",
         "cosmic-settings": "/nix/store/50rcsw85qfm746xgwyw1ylzaz8046ya9-cosmic-settings-1.9.0-unstable-2026-09-30",
-        "cosmic-settings-daemon": "/nix/store/daviji7lqmqqglhycbapqcilksc68il1-cosmic-settings-daemon-1.9.0-unstable-2026-10-02",
+        "cosmic-settings-daemon": "/nix/store/nycqv942hkd22pqckycbawjzh47l1h9p-cosmic-settings-daemon-1.9.0-unstable-2026-10-05",
         "cosmic-sound-theme": "/nix/store/2sv41kvnjgqnv2fjyqc2l1fyxjh15xll-cosmic-sound-theme-1.9.0-unstable-2026-09-30",
-        "cosmic-store": "/nix/store/79kiw08jpkrhk0l909l61kyhaq8csass-cosmic-store-1.9.0-unstable-2026-10-01",
+        "cosmic-store": "/nix/store/bp5wh5qw06d6kxdvrjjadxc7dv7gwazf-cosmic-store-1.9.0-unstable-2026-10-05",
         "cosmic-term": "/nix/store/7xjpb971rvjk1i2rbwbnalj746r2migl-cosmic-term-1.9.0-unstable-2026-10-01",
         "cosmic-viewer": "/nix/store/k12m9xzqzrzvvjnxglz37pz5mzagsk60-cosmic-viewer-1.9.0-unstable-2026-09-30",
         "cosmic-wallpapers": "/nix/store/xdmchv5smgr9g7d3cfmx36fvjv43x3l5-cosmic-wallpapers-1.9.0-unstable-2026-09-30",
@@ -241,20 +241,20 @@
         "pop-launcher": "/nix/store/8l7dsx53r4gb0k0n2hdbirvwrhhyqqr2-pop-launcher-epoch-1.9.0-unstable-2026-09-30",
         "xdg-desktop-portal-cosmic": "/nix/store/pz19gwwxn9qbfpldxc6z6biqmxpy4ksx-xdg-desktop-portal-cosmic-1.9.0-unstable-2026-09-30"
       },
-      "revision": "a7868a727837f3c09cee2ce0ca671c76b1589fed",
+      "revision": "494ce7fd23ff6a5dff39e1fb11e9b6f2ac74bf25",
       "sessions": [
         "cosmic"
       ],
-      "sha256": "0z1daxh826r5d877fa77576ihfq4lzhzwys0ggnppw8bld42s0ia",
-      "systemDerivation": "/nix/store/3kiprppfr6bykgjkl8ljy1mf6g9lrgmj-nixos-system-nixos-26.11pre-git.drv",
-      "systemPath": "/nix/store/bj56zhyzq5vyag2dhflli6gqavyrp8lf-nixos-system-nixos-26.11pre-git"
+      "sha256": "1z191lhpx4iy9igcv54qg8aaxdsn4szdldg9l6y2hs3k4w3hnb9n",
+      "systemDerivation": "/nix/store/vl6pncjvgqh9idqvxjq9532ilzw3q9yl-nixos-system-nixos-26.11pre-git.drv",
+      "systemPath": "/nix/store/6a1m16in9sr4z237hwxwc8k4jf9slp2s-nixos-system-nixos-26.11pre-git"
     }
   },
-  "retentionRoot": "/nix/store/psi5ssksw0gsvk4q7j6ksr7d4v094s65-cosmic-cache-runtime-roots",
-  "revision": "c18fd1683f5fac52aa23b017e701ad681ddfd0f3",
+  "retentionRoot": "/nix/store/w98d0p24n43mkiijbcczfhfahm8qx3bd-cosmic-cache-runtime-roots",
+  "revision": "23ff61b518ce1cee56aabe3e721ec6b995c5939a",
   "schema": 3,
   "storage": {
-    "compressedBytes": 289121868,
+    "compressedBytes": 289819928,
     "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
     "runtimeBudgetBytes": 4294967296,
     "schema": 1,
@@ -262,10 +262,10 @@
     "snapshots": {
       "current": {
         "cachePaths": 65,
-        "compressedBytes": 289121868
+        "compressedBytes": 289819928
       }
     },
-    "updateOverlapBytes": 309789992
+    "updateOverlapBytes": 317648628
   },
-  "verifiedAt": "2026-10-04T18:36:28.411304+00:00"
+  "verifiedAt": "2026-10-05T23:12:07.766246+00:00"
 }
