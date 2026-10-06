@@ -11,16 +11,16 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-monitor";
-  version = "1.9.0-unstable-2026-10-01";
+  version = "1.9.0-unstable-2026-10-06";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-monitor";
-    rev = "be1b79a8bb0ada2c08c421f9466d18000400b7a9";
-    hash = "sha256-c4jlzXonWmf7INES+QcSAgGpjzcVguT1huXRb9XhDsw=";
+    rev = "a79ce9e7d2259a82150d56978fb7a094bd4ec2f0";
+    hash = "sha256-vD2nEjsT1v+ljFJ/PsUUN6JyyzWsoM0jdRL/abF5nnI=";
   };
 
-  cargoHash = "sha256-OM7oNcXuZmdnkdPexTQkHHAN4VxL3wdBqBuZp9vQLG8=";
+  cargoHash = "sha256-7CZdtRj6WKLXd1RO0mGr0pXGvVXtm1gQCQDUOHNpm8U=";
 
   nativeBuildInputs = [
     libcosmicAppHook
