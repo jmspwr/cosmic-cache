@@ -29,7 +29,7 @@ in
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-settings";
-  version = "1.9.0-unstable-2026-10-07";
+  version = "1.10.0-unstable-2026-10-07";
 
   src = fetchFromGitHub {
     owner = "pop-os";

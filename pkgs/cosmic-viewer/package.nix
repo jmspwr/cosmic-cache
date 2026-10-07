@@ -13,7 +13,7 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-viewer";
-  version = "1.9.0-unstable-2026-10-07";
+  version = "1.10.0-unstable-2026-10-07";
 
   __structuredAttrs = true;
 

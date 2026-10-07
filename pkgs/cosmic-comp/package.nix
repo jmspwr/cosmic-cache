@@ -23,7 +23,7 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-comp";
-  version = "1.9.0-unstable-2026-10-05";
+  version = "1.10.0-unstable-2026-10-05";
 
   src = fetchFromGitHub {
     owner = "pop-os";
