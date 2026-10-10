@@ -202,7 +202,7 @@
       "version": "1.10.0-unstable-2026-10-06"
     }
   },
-  "publicationParent": "80c637653145171cdba809dcdb6a44199d8ae0d3",
+  "publicationParent": "e0a68306cb947373e1076cc1c8f006e89bda63e3",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1146,
@@ -241,17 +241,17 @@
         "pop-launcher": "/nix/store/xdk3h9z1164kw8pr35anf65dhjhf5xx7-pop-launcher-epoch-1.10.0-unstable-2026-09-30",
         "xdg-desktop-portal-cosmic": "/nix/store/f1hz0x0hj3byp9lax53b12i07ggc711d-xdg-desktop-portal-cosmic-1.10.0-unstable-2026-10-06"
       },
-      "revision": "e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
+      "revision": "6510408d147d8c5e6d76043e899e9251756f6a75",
       "sessions": [
         "cosmic"
       ],
-      "sha256": "19y4py973w62z4qb7gzn0chjs67ihxy8rbjb7g71iyk8yz7z5k8z",
+      "sha256": "012w2z2w4k0c3kg9hcy9cpd7qgxgrpxvf0735vy014r7x9qhmbjw",
       "systemDerivation": "/nix/store/69raap1vx5kjp3gndlvnmx743b65yg0v-nixos-system-nixos-26.11pre-git.drv",
       "systemPath": "/nix/store/qyvkgvf2605gws04877njcjpbb2cz4zl-nixos-system-nixos-26.11pre-git"
     }
   },
   "retentionRoot": "/nix/store/mmfx7dp36j97fxpxvk2s6r3kqqyiz1qk-cosmic-cache-runtime-roots",
-  "revision": "c6955261cf065638f4f5c2252212e1e9d6fabc8f",
+  "revision": "0e9ce9f2564ec01087e37e6e5f58f0c27c9be264",
   "schema": 3,
   "storage": {
     "compressedBytes": 292991208,
@@ -265,7 +265,7 @@
         "compressedBytes": 292991208
       }
     },
-    "updateOverlapBytes": 338736800
+    "updateOverlapBytes": 292991208
   },
-  "verifiedAt": "2026-10-09T00:03:41.637922+00:00"
+  "verifiedAt": "2026-10-10T21:50:48.889333+00:00"
 }
