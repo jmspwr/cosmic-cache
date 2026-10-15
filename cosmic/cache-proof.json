@@ -202,7 +202,7 @@
       "version": "1.10.0-unstable-2026-10-06"
     }
   },
-  "publicationParent": "a8bebe6a1357dd793f5461456aa999aa5bb25b0c",
+  "publicationParent": "bb651e5e7fc62d8b322a7f44216412122bc534b6",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1146,
@@ -241,20 +241,20 @@
         "pop-launcher": "/nix/store/2101vk4q1y63iv2fyqy3wwkxl1lxv6f3-pop-launcher-epoch-1.10.0-unstable-2026-10-13",
         "xdg-desktop-portal-cosmic": "/nix/store/f1hz0x0hj3byp9lax53b12i07ggc711d-xdg-desktop-portal-cosmic-1.10.0-unstable-2026-10-06"
       },
-      "revision": "7fd4004d0511991fff3a0524856a9be09e28c5f0",
+      "revision": "55bfb4d7437bd4e09ab7cba58a43bd68eb310044",
       "sessions": [
         "cosmic"
       ],
-      "sha256": "0d543n8vngv9wljjxzy20psm64sqwq2x9q8nmmydz2p28bba96lb",
-      "systemDerivation": "/nix/store/cg9z80sb9a0l9iik8lcp0j63nfx0xdm0-nixos-system-nixos-26.11pre-git.drv",
-      "systemPath": "/nix/store/p9lviwikyv0b2m4wd18j4yp5wk5a5l51-nixos-system-nixos-26.11pre-git"
+      "sha256": "02sljlk6abwqsx32nhjmfbm7hki7nvcsg442ldp0yx9f5qz0c5lc",
+      "systemDerivation": "/nix/store/ixyz4hiqd8k4pr9skqbqpmpzmvvwx45y-nixos-system-nixos-26.11pre-git.drv",
+      "systemPath": "/nix/store/dfx36fb21fyc0f6p60b1f5vdlqipjh02-nixos-system-nixos-26.11pre-git"
     }
   },
-  "retentionRoot": "/nix/store/0yqdaidh8fw1s1acs476pi6q6yz95xyi-cosmic-cache-runtime-roots",
-  "revision": "14652f0ca6ef491a04729e9f55f15a321d35fceb",
+  "retentionRoot": "/nix/store/5hda5zc88abq3sq8gc9bnqpg923dq93p-cosmic-cache-runtime-roots",
+  "revision": "b5631197c78edacfff5e8fa9b16784949eb6d812",
   "schema": 3,
   "storage": {
-    "compressedBytes": 293133832,
+    "compressedBytes": 293133656,
     "method": "Cachix narinfo FileSize; official-cache paths excluded; shared paths counted once",
     "runtimeBudgetBytes": 4294967296,
     "schema": 1,
@@ -262,10 +262,10 @@
     "snapshots": {
       "current": {
         "cachePaths": 65,
-        "compressedBytes": 293133832
+        "compressedBytes": 293133656
       }
     },
-    "updateOverlapBytes": 316111260
+    "updateOverlapBytes": 293647932
   },
-  "verifiedAt": "2026-10-15T05:08:56.778440+00:00"
+  "verifiedAt": "2026-10-15T09:59:46.055549+00:00"
 }
