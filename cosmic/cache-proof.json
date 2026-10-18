@@ -202,7 +202,7 @@
       "version": "1.10.0-unstable-2026-10-06"
     }
   },
-  "publicationParent": "00f468020525768d562173722f26f2bd2264bae2",
+  "publicationParent": "5d82e00ba3d402f7a6d6c0b7030d43709726d747",
   "referenceSystems": {
     "nixos-unstable": {
       "closurePaths": 1146,
@@ -251,7 +251,7 @@
     }
   },
   "retentionRoot": "/nix/store/hy23hvh7ld38iprm4yc3mpkvvniqcw24-cosmic-cache-runtime-roots",
-  "revision": "0f680ebaccff0cb885265d018d7371f356e330df",
+  "revision": "27e845781ea4f478b7c3a2b3f346d6a8d0803620",
   "schema": 3,
   "storage": {
     "compressedBytes": 293133800,
@@ -265,7 +265,7 @@
         "compressedBytes": 293133800
       }
     },
-    "updateOverlapBytes": 293645800
+    "updateOverlapBytes": 293133800
   },
-  "verifiedAt": "2026-10-18T01:07:31.427829+00:00"
+  "verifiedAt": "2026-10-18T14:39:29.405014+00:00"
 }
