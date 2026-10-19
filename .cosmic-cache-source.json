@@ -12,7 +12,7 @@
     "pop-os/cosmic-icons": "f1a282a0822aed1f0083dd2ab2e6c65bd5b401eb",
     "pop-os/cosmic-idle": "21e983c63e75640ab0055495e768a5c616742c19",
     "pop-os/cosmic-initial-setup": "8b025bc9eec4844d8c01fb238e5298b3db920b3f",
-    "pop-os/cosmic-launcher": "03195ddb097c6ad83c4072917d60d900b8bd944f",
+    "pop-os/cosmic-launcher": "6d63b1dbe3affe456746ae55368753e585ebb390",
     "pop-os/cosmic-monitor": "a79ce9e7d2259a82150d56978fb7a094bd4ec2f0",
     "pop-os/cosmic-notifications": "c1a0695c3629ae3524b5c9b654ac7431ad1bc558",
     "pop-os/cosmic-osd": "9b14ee017fb8fdb7d03d73da597cf17b89d890f7",
@@ -35,7 +35,7 @@
     "pop-os/launcher": "3f35b7f02f93d262be51da62fee7a0f71c1fd54b",
     "pop-os/xdg-desktop-portal-cosmic": "9d35e6300b69cf06da723a502a9a56604a022786"
   },
-  "generatedAt": "2026-10-18T14:34:08.792620+00:00",
+  "generatedAt": "2026-10-19T21:03:22.250858+00:00",
   "nixpkgs": "fe13242281a67641c0102cdb1087f0ebe586c7df",
   "packagingBase": "a3fce123b2177183e806c894fe8f576567f09f0d",
   "schema": 2,
