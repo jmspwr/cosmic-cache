@@ -11,13 +11,13 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-randr";
-  version = "1.10.0-unstable-2026-10-20";
+  version = "1.11.0-unstable-2026-10-20";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-randr";
-    rev = "7bce576cf6a82f329ecfc2cc9b206d3932fb41ff";
-    hash = "sha256-ldcH/1cmNXgRiEUgPBWNn5ZLCnycEI4VBgZKkLAr6Ns=";
+    rev = "f1a97655c97e8799bf4a37a8f5103a8ab5e5068d";
+    hash = "sha256-/e/fokpa+MFqDNcBEmTqsIoJ/eYsJqzb19dDcIROUws=";
   };
 
   cargoHash = "sha256-eKYYpsSQ9VkCLZ2tUzf4l2m2uXY+m0EqiB0VU4p2Uec=";
