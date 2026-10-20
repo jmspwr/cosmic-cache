@@ -11,16 +11,16 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-osk";
-  version = "1.10.0-unstable-2026-10-08";
+  version = "1.10.0-unstable-2026-10-20";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-osk";
-    rev = "3a4800a10b03efac1684817238922db5d6746403";
-    hash = "sha256-Xf8d9c/pVeP5lpruB77onfJM8P5FPUNpmb5EZUhfI2Q=";
+    rev = "6b146a2b0a23d88ae84223ad06c6813bda5a9386";
+    hash = "sha256-rw8BMxgr5MzmCj8THSOr/TE2GsAMxgC2YXgONVppYzc=";
   };
 
-  cargoHash = "sha256-PfI2w4M0OCGC2yVV9Q4xhN/ZQ/QZmvkZtlq0fzKMQ3M=";
+  cargoHash = "sha256-3aAaceBp6fDQc0KDwY5L922tGvK+5z5Kbzyy+De6Hkg=";
 
   nativeBuildInputs = [
     rustPlatform.bindgenHook
