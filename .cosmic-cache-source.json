@@ -5,7 +5,7 @@
     "pop-os/cosmic-applets": "dc252e34fd368a63981633075194e52b3f794f9a",
     "pop-os/cosmic-applibrary": "3651caff79bcf36f7c16ba5ed4f41de530c7b1a7",
     "pop-os/cosmic-bg": "9520e16758693bc2f6845d52680f236d548edda2",
-    "pop-os/cosmic-comp": "5d6cfabe018f6871b9a1e646b3e275b963f3216f",
+    "pop-os/cosmic-comp": "9239866618d512c909301f60d337969e46ff466f",
     "pop-os/cosmic-edit": "4ac1cc84f784d4f89327f3d3459af2633ceb4f12",
     "pop-os/cosmic-files": "4efe802ede04b4e56d55727c54ab40d4e8777f4b",
     "pop-os/cosmic-greeter": "b7b59d487ecdbe97b7e317cc57b8e21015072f29",
@@ -35,7 +35,7 @@
     "pop-os/launcher": "86c2639ba82f4d846c801abe84fcea8ae8e7d716",
     "pop-os/xdg-desktop-portal-cosmic": "f448ddfb296bf7bb23517b24b2f532559a334a1c"
   },
-  "generatedAt": "2026-10-28T08:24:32.202950+00:00",
+  "generatedAt": "2026-10-28T16:02:21.794737+00:00",
   "nixpkgs": "31ecbaca1bdefa45dffc409f0250bd8039ea0010",
   "packagingBase": "4104c1d4336b3170739ab87bcf2e8c4d7cb12f8b",
   "schema": 2,
