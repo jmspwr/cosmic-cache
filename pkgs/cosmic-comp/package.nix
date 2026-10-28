@@ -28,8 +28,8 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-comp";
-    rev = "9239866618d512c909301f60d337969e46ff466f";
-    hash = "sha256-pAGyBGgKVGlXoFPfmacnD4PTsMzMud1289QlPc6mre4=";
+    rev = "cfd6a507e3fbbf329c7c0945c9721e9b83396c3c";
+    hash = "sha256-l/fiqygI7/VRh+OX1WsZlKBHa0RyeKDsDwiUutKFgpQ=";
   };
 
   cargoHash = "sha256-D9kykY+WGVcsm4Bgapw5r3vrc1xDuMM5v+1a1Pn13Qk=";
