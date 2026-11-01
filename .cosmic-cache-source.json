@@ -35,9 +35,9 @@
     "pop-os/launcher": "86c2639ba82f4d846c801abe84fcea8ae8e7d716",
     "pop-os/xdg-desktop-portal-cosmic": "f448ddfb296bf7bb23517b24b2f532559a334a1c"
   },
-  "generatedAt": "2026-10-30T23:46:14.070383+00:00",
+  "generatedAt": "2026-11-01T19:36:49.051569+00:00",
   "nixpkgs": "1c89083e451e891152365b799595cf7790a43325",
-  "packagingBase": "4104c1d4336b3170739ab87bcf2e8c4d7cb12f8b",
+  "packagingBase": "ae1b81beb51bcc4455d46a4d9bf802928f149096",
   "schema": 2,
   "suite": [
     "cosmic-applets",
