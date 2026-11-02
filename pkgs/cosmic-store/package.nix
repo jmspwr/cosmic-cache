@@ -14,16 +14,16 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-store";
-  version = "1.11.0-unstable-2026-10-27";
+  version = "1.11.0-unstable-2026-11-02";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-store";
-    rev = "bb24819c25de982f66bc736c029af8303b5c29c4";
-    hash = "sha256-qMjHwo3N/+Rblq/zuiv0Wa52kb09MIrHboGZ4hYbWWg=";
+    rev = "63e765027f07e1f6d9c79179bd1c2b1595ac7492";
+    hash = "sha256-bIpWF2ERyXaar668tgG31+PMWnMEfclybj+ozTYSUso=";
   };
 
-  cargoHash = "sha256-1/RVp17C2dRbPjc/BkAUrzjhFqyOL3p3+Ol0Mte3vfI=";
+  cargoHash = "sha256-QiRVqeWV/d2UbSc+iVCFr+m925p+xgNjnKeFrBfqDv0=";
 
   nativeBuildInputs = [
     libcosmicAppHook
