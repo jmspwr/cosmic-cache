@@ -12,20 +12,20 @@
 
 stdenv.mkDerivation (self: {
   pname = "cutecosmic";
-  version = "0.2.0-unstable-2026-11-03";
+  version = "0.2.0-unstable-2026-11-04";
 
   src = fetchFromGitHub {
     owner = "IgKh";
     repo = "cutecosmic";
-    rev = "e83cbd2a51f86c7e441fa3bb3235179c474395b5";
-    hash = "sha256-geZufOLINRy5j5Gpa7VupO3QOEk3qJUTaZ/BxKU2TSI=";
+    rev = "3cf66ae405b7b65ff65b884b98fd4b72c9f62e85";
+    hash = "sha256-EVohcK7+yvVrUolwBfGvnkX6u8U+tvepxggpVPi5b2A=";
   };
 
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (self) src;
     name = self.pname;
     sourceRoot = "${self.src.name}/bindings";
-    hash = "sha256-u7WXVH5TqCvbpHDFPAw2bjurIHLmX+LmypCpRHMGcXA=";
+    hash = "sha256-vFShpb87LYOdPR0APgUL0M28nXWN9Gvmf2q45VKwSYA=";
   };
 
   cargoRoot = "bindings";
