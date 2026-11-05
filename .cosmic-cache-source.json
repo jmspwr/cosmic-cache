@@ -2,7 +2,7 @@
   "added": [],
   "components": {
     "IgKh/cutecosmic": "3cf66ae405b7b65ff65b884b98fd4b72c9f62e85",
-    "pop-os/cosmic-applets": "6f89bfa3f9d12862ceb758beac228c5b35b91431",
+    "pop-os/cosmic-applets": "2ad004a9b88c68fcaf55080623956178a01e5d7e",
     "pop-os/cosmic-applibrary": "84f3e07d7ca51845ca53068eddc729f63fb345c2",
     "pop-os/cosmic-bg": "afce6904b201754fcad3f3d3bd9acd6ba21536ab",
     "pop-os/cosmic-comp": "cb86b9ec6f18ca2d2ad3b39426a57ab850867070",
@@ -24,7 +24,7 @@
     "pop-os/cosmic-reader": "208c76f08199c19629efed630ca78aea2149a6e9",
     "pop-os/cosmic-screenshot": "45549f7e940d495ecee9268f58824668814e970c",
     "pop-os/cosmic-session": "4b0a0a24e98b9e755b6a7146e4cb29539cacda0a",
-    "pop-os/cosmic-settings": "d678586a0e62b907e91a1079e73f6c42358185e5",
+    "pop-os/cosmic-settings": "4cf24f610b8e178e0691986c28b3fe86b3edbe80",
     "pop-os/cosmic-settings-daemon": "108e095779549931e7ce109429255a1341c70b7c",
     "pop-os/cosmic-sound-theme": "bf5335fe1af0cb3bee83e1ad2371410ee434658d",
     "pop-os/cosmic-store": "63e765027f07e1f6d9c79179bd1c2b1595ac7492",
@@ -35,7 +35,7 @@
     "pop-os/launcher": "86c2639ba82f4d846c801abe84fcea8ae8e7d716",
     "pop-os/xdg-desktop-portal-cosmic": "f448ddfb296bf7bb23517b24b2f532559a334a1c"
   },
-  "generatedAt": "2026-11-05T15:33:24.346091+00:00",
+  "generatedAt": "2026-11-05T22:03:50.818632+00:00",
   "nixpkgs": "1d060086d60cb76a40cf37109f979d88a5bd6396",
   "packagingBase": "ae1b81beb51bcc4455d46a4d9bf802928f149096",
   "schema": 2,
