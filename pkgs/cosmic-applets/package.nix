@@ -18,16 +18,16 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-applets";
-  version = "1.11.0-unstable-2026-11-05";
+  version = "1.11.0-unstable-2026-11-06";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-applets";
-    rev = "2ad004a9b88c68fcaf55080623956178a01e5d7e";
-    hash = "sha256-6lzxLxZkVxhJQpAKlKwF2AUJbidpCVLeIXovrJGD6rY=";
+    rev = "66865a70dfb95f5ed98a6d1943600c63f9cde808";
+    hash = "sha256-8ykSNFtdKvF3m6VhEUOC2JcXUraS9V0eMEC0BEFTTww=";
   };
 
-  cargoHash = "sha256-kK1iqSjeNvDDv0czZh3fNaDbZqoL7QqjCMC0X2O3xPc=";
+  cargoHash = "sha256-8KgAt3HrdVnjTjzzQ+4L5oD2HOuCqNHiII5I2wfgUuE=";
 
   nativeBuildInputs = [
     libcosmicAppHook
