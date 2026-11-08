@@ -1,7 +1,7 @@
 {
   "added": [],
   "components": {
-    "IgKh/cutecosmic": "3cf66ae405b7b65ff65b884b98fd4b72c9f62e85",
+    "IgKh/cutecosmic": "707244c52a578d4766205ab4cdb03561cb5b306f",
     "pop-os/cosmic-applets": "ef6c9e62f64dab0e4a3d03c75d369f75279fea51",
     "pop-os/cosmic-applibrary": "c19e73ef7d4160d42a5943790cdc7da95ee1c9f9",
     "pop-os/cosmic-bg": "09e93d38798d2fc2ac53d03e4988800c179c8dea",
@@ -35,8 +35,8 @@
     "pop-os/launcher": "4111617b7345134abe67332a7baa5ef12538f412",
     "pop-os/xdg-desktop-portal-cosmic": "f25d7717e7b8fa8d7757659855e39948cbff88e5"
   },
-  "generatedAt": "2026-11-08T15:10:33.329792+00:00",
-  "nixpkgs": "f9a75f41be3a74eab55d3a7679d34ad6cc0da977",
+  "generatedAt": "2026-11-08T19:44:52.000861+00:00",
+  "nixpkgs": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
   "packagingBase": "ae1b81beb51bcc4455d46a4d9bf802928f149096",
   "schema": 2,
   "suite": [
