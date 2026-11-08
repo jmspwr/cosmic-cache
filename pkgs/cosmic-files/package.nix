@@ -7,6 +7,7 @@
   glib,
   just,
   nix-update-script,
+  shared-mime-info,
 }:
 
 rustPlatform.buildRustPackage {
@@ -64,6 +65,7 @@ rustPlatform.buildRustPackage {
   '';
 
   checkPhase = ''
+    export XDG_DATA_DIRS=${shared-mime-info}/share''${XDG_DATA_DIRS:+:$XDG_DATA_DIRS}
     baseCargoTestFlags="$cargoTestFlags"
     # cargoCheckHook prepends to checkFlags, so isolate each invocation.
     cargoTestFlags="$baseCargoTestFlags --package cosmic-files"

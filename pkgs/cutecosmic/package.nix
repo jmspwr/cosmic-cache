@@ -56,6 +56,9 @@ stdenv.mkDerivation (self: {
     substituteInPlace platformtheme/CMakeLists.txt \
       --replace-fail "\''${QT_INSTALL_PLUGINS}/platformthemes" \
       "${qt6.qtbase.qtPluginPrefix}/platformthemes"
+    substituteInPlace CMakeLists.txt \
+      --replace-fail "\''${QT_INSTALL_LIBS}/cutecosmic" \
+      "${builtins.placeholder "out"}/lib"
   '';
 
   passthru.updateScript = nix-update-script {};

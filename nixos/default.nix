@@ -30,5 +30,8 @@ in
 
   disabledModules = lib.optionals (modulesPath != unstableModulesPath) (modules modulesPath);
 
-  nixpkgs.overlays = [ cosmicOverlay ];
+  config = {
+    nixpkgs.overlays = [ cosmicOverlay ];
+    qt.enable = lib.mkOverride 999 false;
+  };
 }
