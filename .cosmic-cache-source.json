@@ -33,9 +33,9 @@
     "pop-os/cosmic-wallpapers": "da595bba495cb8fc57f26505621fc25000218349",
     "pop-os/cosmic-workspaces-epoch": "cb953ea0e6fb45ac8f62f9c52f1347c971388e03",
     "pop-os/launcher": "4111617b7345134abe67332a7baa5ef12538f412",
-    "pop-os/xdg-desktop-portal-cosmic": "2d701019e9c629c6198117c5998456c24ea21d11"
+    "pop-os/xdg-desktop-portal-cosmic": "ceb37228644dcdb61dc210b16afaf5439ac08ed5"
   },
-  "generatedAt": "2026-11-17T04:18:37.676401+00:00",
+  "generatedAt": "2026-11-17T22:23:33.012006+00:00",
   "nixpkgs": "d5cc6833999746cffdfe0598f7bc801a57b887a9",
   "packagingBase": "d74f7d30adc69e331c956c713ef046a3e29574df",
   "schema": 2,
