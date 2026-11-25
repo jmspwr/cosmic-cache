@@ -15,16 +15,16 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-player";
-  version = "1.11.0-unstable-2026-10-20";
+  version = "1.12.0-unstable-2026-11-24";
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-player";
-    rev = "34a41f247a37eb681dd5c27c832e2d1f3c1dc1e4";
-    hash = "sha256-EZPxvdVo7KmkT3mG/L+4V3ohOKKMrWM1wywbO6nGWx4=";
+    rev = "eb64fd13052930a41856369e9a0887045ae33948";
+    hash = "sha256-q3PD2olWNxhhYmPH80JMKq9QNuayPWj+9Z0S5hQTq/U=";
   };
 
-  cargoHash = "sha256-Px+J8he6YMvWIpCBngnPVgId2nfA1Ed5v4cxZUJa10Q=";
+  cargoHash = "sha256-vVp+bSHcdTqmvPDDM1/Zt5UEGsnWz+DrNBimLK/Jpnw=";
 
   nativeBuildInputs = [
     libcosmicAppHook

@@ -13,18 +13,18 @@
 
 rustPlatform.buildRustPackage {
   pname = "cosmic-viewer";
-  version = "1.11.0-unstable-2026-10-20";
+  version = "1.12.0-unstable-2026-11-24";
 
   __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "pop-os";
     repo = "cosmic-viewer";
-    rev = "300210f1c7d86ba14a43602e40dd5fe1deb16703";
-    hash = "sha256-HR/GQT8RbLBdT/jY1XgaUPaVeUJYx8SfhjuwLV+CSOo=";
+    rev = "067c4fd0dba16a57a029aff40a0410af45bbe580";
+    hash = "sha256-AZ1ZJcwDFoU/FiXJKP0rjBLO76xdtUBo1W7i1TwsH68=";
   };
 
-  cargoHash = "sha256-fUtTCA5a3kn3O8O2aUoUA+23Yz3ynSIiDqxWPnDLi7o=";
+  cargoHash = "sha256-h7cPpTZAgvKslsvuuVFTxZflKiNMqrZjhAVGI/VGebk=";
 
   postPatch = ''
     substituteInPlace Cargo.toml \
