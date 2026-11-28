@@ -23,7 +23,7 @@ rustPlatform.buildRustPackage {
     hash = "sha256-uBgPOms5MC7/Z6gvxRfXwM4u2nvo102/IWeglvqKg0s=";
   };
 
-  cargoHash = "sha256-vPvH/tl93ZvQcP5jfTXoLoj6sCcUmHw6wZn17m4eWMQ=";
+  cargoHash = "sha256-rOaYyy+HXh5fIA8AyIyS1Ix5nD7JP+fScOKeKvCIsRA=";
 
   patches = [
     (replaceVars ./hardcode-cutecosmic-plugin-path.patch {
